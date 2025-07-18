@@ -1,0 +1,38 @@
+name: Deploy via SSH
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+    
+    - name: Build Docker Image
+      run: |
+        docker build --tag ${{ github.event.repository.name }} .
+    
+    - name: Docker image to tar file
+      run: |
+        docker save ${{ github.event.repository.name }} | gzip > ${{ github.event.repository.name }}.tar.gz
+
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_IP }} >> ~/.ssh/known_hosts
+
+    - name: Deploy on Remote Server
+      run: |
+        rsync -e 'ssh -p ${{ secrets.SSH_PORT }}' -avz --delete ./${{ github.event.repository.name }}.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}:/deploy
+        ssh -l ${{ secrets.SSH_USER }} -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_IP }} << 'EOF'
+          cd /deploy
+          docker load < ${{ github.event.repository.name }}.tar.gz
+          docker stop ${{ github.event.repository.name }} 
+          docker run -d --rm --name ${{ github.event.repository.name }} -p 10001:3000 --env-file .env.${{ github.event.repository.name }} ${{ github.event.repository.name }}
+        EOF
