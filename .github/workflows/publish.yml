@@ -9,16 +9,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - id: string
+      uses: ASzc/change-string-case-action@v6
+      with:
+        string: ${{ github.event.repository.name }}
+
     - name: Checkout source code
       uses: actions/checkout@v4
     
     - name: Build Docker Image
       run: |
-        docker build --tag ${{ github.event.repository.name }} .
+        docker build --tag ${{ steps.string.outputs.lowercase }} .
     
     - name: Docker image to tar file
       run: |
-        docker save ${{ github.event.repository.name }} | gzip > ${{ github.event.repository.name }}.tar.gz
+        docker save ${{ steps.string.outputs.lowercase }} | gzip > ${{ steps.string.outputs.lowercase }}.tar.gz
 
     - name: Set up SSH
       run: |
@@ -29,10 +34,10 @@ jobs:
 
     - name: Deploy on Remote Server
       run: |
-        rsync -e 'ssh -p ${{ secrets.SSH_PORT }}' -avz --delete ./${{ github.event.repository.name }}.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}:/deploy
+        rsync -e 'ssh -p ${{ secrets.SSH_PORT }}' -avz --delete ./${{ steps.string.outputs.lowercase }}.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}:/deploy
         ssh -l ${{ secrets.SSH_USER }} -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_IP }} << 'EOF'
           cd /deploy
-          docker load < ${{ github.event.repository.name }}.tar.gz
-          docker stop ${{ github.event.repository.name }} 
-          docker run -d --rm --name ${{ github.event.repository.name }} -p 10001:3000 --env-file .env.${{ github.event.repository.name }} ${{ github.event.repository.name }}
+          docker load < ${{ steps.string.outputs.lowercase }}.tar.gz
+          docker stop ${{ steps.string.outputs.lowercase }} 
+          docker run -d --rm --name ${{ steps.string.outputs.lowercase }} -p 10001:3000 --env-file .env.${{ steps.string.outputs.lowercase }} ${{ steps.string.outputs.lowercase }}
         EOF
