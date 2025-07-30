@@ -19,8 +19,8 @@ router.post('/login',
             if(type == "google-web") {
                 let loginResult = await googleLogin(
                     code,
-                    process.env.CLIENT_SECRET_GOOGLE_WEB!,
-                    process.env.CLIENT_ID_GOOGLE_WEB!
+                    process.env.CLIENT_SECRET_GOOGLE_WEB!.trim(),
+                    process.env.CLIENT_ID_GOOGLE_WEB!.trim()
                 );
 
                 res.status(200).json(loginResult);
