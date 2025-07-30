@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { createJwtToken } from '../../utils/jwt';
 import querystring from 'querystring';
 import getGoogleUserinfo from '../../utils/getGoogleUserinfo';
+import HTTPError from '../../utils/HTTPError';
 
 type LoginResult = {
     email: string,
@@ -59,15 +60,19 @@ export const googleLogin = async (code: string, clientSecret: string, clientId: 
 
     if (authResult.status != 200) {
         console.error(`status: ${authResult.status}`);
-        console.log(await authResult.text());
-        throw Error("Authorization failed");
+        const errorJson = await authResult.json();
+        console.log(errorJson);
+        if (errorJson.error === "invalid_grant")
+            throw new HTTPError(400, "Invalid authentication code");
+        else 
+            throw new HTTPError(500, "Authorization failed");
     }
 
     let resultJson = await authResult.json();
     let googleAccessToken = resultJson.access_token as string;
     if (!googleAccessToken) {
         console.error("accessToken is not true");
-        throw Error("Authorization failed");
+        throw new HTTPError(500, "Authorization failed");
     }
 
     console.log(googleAccessToken);
@@ -75,5 +80,5 @@ export const googleLogin = async (code: string, clientSecret: string, clientId: 
     let userinfo = await getGoogleUserinfo(googleAccessToken);
     console.log(`email: ${userinfo.email}, profile: ${userinfo.profile}`);
 
-    return {email: userinfo.email, uid: 0, accessToken: "", refreshToken: ""};
+    return { email: userinfo.email, uid: 0, accessToken: "", refreshToken: "" };
 }
