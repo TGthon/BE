@@ -7,6 +7,8 @@ import { createJwtToken } from '../../utils/jwt';
 import querystring from 'querystring';
 import getGoogleUserinfo from '../../utils/getGoogleUserinfo';
 import HTTPError from '../../utils/HTTPError';
+import { OAuth2Client } from 'google-auth-library';
+const oauthClient = new OAuth2Client();
 
 type LoginResult = {
     email: string,
@@ -81,4 +83,28 @@ export const googleLogin = async (code: string, clientSecret: string, clientId: 
     console.log(`email: ${userinfo.email}, profile: ${userinfo.profile}`);
 
     return { email: userinfo.email, uid: 0, accessToken: "", refreshToken: "" };
+}
+
+export const googleAppLogin = async (code: string, clientId: string): Promise<LoginResult> => {
+    try {
+        const ticket = await oauthClient.verifyIdToken({
+            idToken: code,
+            audience: clientId
+        });
+        const payload = ticket.getPayload();
+        if (payload === undefined) 
+            throw new HTTPError(400, "Invalid token");
+        if (!payload.email_verified)
+            throw new HTTPError(400, "Invalid account");
+        if (!payload.email)
+            throw new HTTPError(400, "Invalid token");
+
+        const email = payload.email;
+
+        return { email, uid: 0, accessToken: "", refreshToken: "" };
+    }
+    catch(e) {
+        console.error(e);
+        throw new HTTPError(400, "Login failed");
+    }
 }
