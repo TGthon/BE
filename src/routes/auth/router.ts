@@ -3,6 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body } from 'express-validator';
 import { googleLogin } from './service';
 import 'dotenv';
+import HTTPError from '../../utils/HTTPError';
 
 const router = Router();
 router.use(express.urlencoded({ extended: false }));
@@ -26,10 +27,7 @@ router.post('/login',
                 res.status(200).json(loginResult);
             }
             else {
-                res.status(400).json({
-                    ok: false,
-                    reason: "Invalid type"
-                });
+                throw new HTTPError(400, "Invalid type");
             }
         }
         catch(e) {
