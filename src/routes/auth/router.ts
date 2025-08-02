@@ -18,9 +18,13 @@ router.post('/login',
             const code = req.body.code as string;
 
             if (type == "web") {
-                let loginResult = await googleLogin(
+                // let loginResult = await googleLogin(
+                //     code,
+                //     process.env.CLIENT_SECRET_GOOGLE_WEB!.trim(),
+                //     process.env.CLIENT_ID_GOOGLE_WEB!.trim()
+                // );
+                let loginResult = await googleAppLogin(
                     code,
-                    process.env.CLIENT_SECRET_GOOGLE_WEB!.trim(),
                     process.env.CLIENT_ID_GOOGLE_WEB!.trim()
                 );
 
