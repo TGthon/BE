@@ -2,8 +2,17 @@ import express from 'express';
 import router from './routes';
 import { Request, Response, NextFunction } from 'express';
 import HTTPError from './utils/HTTPError';
+import cors from 'cors';
 
 const app = express();
+
+// for development
+const corsOptions = {
+    origin: 'http://localhost:8081',
+    credentials: true
+}
+
+app.use(cors(corsOptions));
 
 app.use('/api', router);
 
