@@ -8,7 +8,7 @@ type PayloadData = {
 export const createJwtToken = (uid: number, lifetime: number = 300) => {
     let token = jwt.sign(
         { uid }, 
-        process.env.JWT_KEY!,
+        process.env.JWT_KEY!.trim(),
         { expiresIn: lifetime }
     )
 
@@ -19,7 +19,7 @@ export const verifyJwtToken = (token: string) => {
     try {
         const payload = jwt.verify(
             token,
-            process.env.JWT_KEY!
+            process.env.JWT_KEY!.trim()
         );
 
         console.log(payload);

@@ -1,13 +1,14 @@
 import crypto from 'crypto';
-// import { db } from "../database";
-// import { sessions, users } from "../../drizzle/schema";
-// import { eq } from 'drizzle-orm';
-// import hash from '../../utils/hash';
+import { db } from "../../database";
+import { sessions, users } from "../../drizzle/schema";
+import { eq } from 'drizzle-orm';
+import hash from '../../utils/hash';
 import { createJwtToken } from '../../utils/jwt';
 import querystring from 'querystring';
 import getGoogleUserinfo from '../../utils/getGoogleUserinfo';
 import HTTPError from '../../utils/HTTPError';
 import { OAuth2Client } from 'google-auth-library';
+import findUser from '../../utils/findUser';
 const oauthClient = new OAuth2Client();
 
 type LoginResult = {
@@ -19,15 +20,15 @@ type LoginResult = {
 
 // DB에 토큰 저장
 const registerRefreshToken = async (uid: number, token: string, lifetime: number = 31556926 /* 기본값 1년 */) => {
-    // let hashed = hash(token);
-    // let issuedAt = new Date();
-    // let expiresAt = new Date(issuedAt.getTime() + lifetime * 1000);
-    // await db.insert(sessions).values({
-    //     uid,
-    //     token: hashed,
-    //     issuedAt,
-    //     expiresAt,
-    // });
+    let hashed = hash(token);
+    let issuedAt = new Date();
+    let expiresAt = new Date(issuedAt.getTime() + lifetime * 1000);
+    await db.insert(sessions).values({
+        uid,
+        token: hashed,
+        issuedAt,
+        expiresAt,
+    });
 }
 
 // 비보안 로그인, email만 주면 토큰 발행해줌
@@ -45,45 +46,45 @@ const registerRefreshToken = async (uid: number, token: string, lifetime: number
 //     return { uid, accessToken, refreshToken };
 // }
 
-export const googleLogin = async (code: string, clientSecret: string, clientId: string): Promise<LoginResult> => {
-    let authResult = await fetch("https://oauth2.googleapis.com/token", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: querystring.stringify({
-            code,
-            client_id: clientId,
-            client_secret: clientSecret,
-            redirect_uri: "http://localhost:3000/login", 
-            grant_type: "authorization_code",
-        })
-    });
+// export const googleLogin = async (code: string, clientSecret: string, clientId: string): Promise<LoginResult> => {
+//     let authResult = await fetch("https://oauth2.googleapis.com/token", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/x-www-form-urlencoded",
+//         },
+//         body: querystring.stringify({
+//             code,
+//             client_id: clientId,
+//             client_secret: clientSecret,
+//             redirect_uri: "http://localhost:3000/login", 
+//             grant_type: "authorization_code",
+//         })
+//     });
 
-    if (authResult.status != 200) {
-        console.error(`status: ${authResult.status}`);
-        const errorJson = await authResult.json();
-        console.log(errorJson);
-        if (errorJson.error === "invalid_grant")
-            throw new HTTPError(400, "Invalid authentication code");
-        else 
-            throw new HTTPError(500, "Authorization failed");
-    }
+//     if (authResult.status != 200) {
+//         console.error(`status: ${authResult.status}`);
+//         const errorJson = await authResult.json();
+//         console.log(errorJson);
+//         if (errorJson.error === "invalid_grant")
+//             throw new HTTPError(400, "Invalid authentication code");
+//         else 
+//             throw new HTTPError(500, "Authorization failed");
+//     }
 
-    let resultJson = await authResult.json();
-    let googleAccessToken = resultJson.access_token as string;
-    if (!googleAccessToken) {
-        console.error("accessToken is not true");
-        throw new HTTPError(500, "Authorization failed");
-    }
+//     let resultJson = await authResult.json();
+//     let googleAccessToken = resultJson.access_token as string;
+//     if (!googleAccessToken) {
+//         console.error("accessToken is not true");
+//         throw new HTTPError(500, "Authorization failed");
+//     }
 
-    console.log(googleAccessToken);
+//     console.log(googleAccessToken);
 
-    let userinfo = await getGoogleUserinfo(googleAccessToken);
-    console.log(`email: ${userinfo.email}, profile: ${userinfo.profile}`);
+//     let userinfo = await getGoogleUserinfo(googleAccessToken);
+//     console.log(`email: ${userinfo.email}, profile: ${userinfo.profile}`);
 
-    return { email: userinfo.email, uid: 0, accessToken: "", refreshToken: "" };
-}
+//     return { email: userinfo.email, uid: 0, accessToken: "", refreshToken: "" };
+// }
 
 export const googleAppLogin = async (code: string, clientId: string): Promise<LoginResult> => {
     try {
@@ -101,7 +102,17 @@ export const googleAppLogin = async (code: string, clientId: string): Promise<Lo
 
         const email = payload.email;
 
-        return { email, uid: 0, accessToken: "", refreshToken: "" };
+        let uid = await findUser(email, true, {
+            userName: payload.name || "사용자",
+            profilePicture: undefined /* payload.picture || undefined */
+        });
+
+        let refreshToken = crypto.randomBytes(32).toString('base64url');
+        let accessToken = createJwtToken(uid);
+
+        await registerRefreshToken(uid, refreshToken);
+
+        return { email, uid, accessToken, refreshToken };
     }
     catch(e) {
         console.error(e);

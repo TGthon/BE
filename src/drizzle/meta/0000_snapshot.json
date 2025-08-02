@@ -1,0 +1,238 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "5",
+  "dialect": "mysql",
+  "tables": {
+    "groups": {
+      "name": "groups",
+      "columns": {
+        "gid": {
+          "autoincrement": true,
+          "name": "gid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "group_name": {
+          "autoincrement": false,
+          "name": "group_name",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "groups_gid": {
+          "name": "groups_gid",
+          "columns": [
+            "gid"
+          ]
+        }
+      },
+      "indexes": {
+        "group_name": {
+          "name": "group_name",
+          "columns": [
+            "group_name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "sessions": {
+      "name": "sessions",
+      "columns": {
+        "uid": {
+          "autoincrement": false,
+          "name": "uid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "autoincrement": false,
+          "name": "token",
+          "type": "char(43)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issued_at": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "issued_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "autoincrement": false,
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "sessions_uid_token": {
+          "name": "sessions_uid_token",
+          "columns": [
+            "uid",
+            "token"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "uid": {
+          "autoincrement": true,
+          "name": "uid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "autoincrement": false,
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "profile_picture": {
+          "autoincrement": false,
+          "name": "profile_picture",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "users_uid": {
+          "name": "users_uid",
+          "columns": [
+            "uid"
+          ]
+        }
+      },
+      "indexes": {
+        "email": {
+          "name": "email",
+          "columns": [
+            "email"
+          ],
+          "isUnique": false
+        },
+        "name": {
+          "name": "name",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "users_groups": {
+      "name": "users_groups",
+      "columns": {
+        "uid": {
+          "autoincrement": false,
+          "name": "uid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gid": {
+          "autoincrement": false,
+          "name": "gid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "users_groups_gid_idx": {
+          "name": "users_groups_gid_idx",
+          "columns": [
+            "gid"
+          ],
+          "isUnique": false
+        },
+        "users_groups_uid_idx": {
+          "name": "users_groups_uid_idx",
+          "columns": [
+            "uid"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "users_groups_gid": {
+          "name": "users_groups_gid",
+          "tableFrom": "users_groups",
+          "tableTo": "groups",
+          "columnsFrom": [
+            "gid"
+          ],
+          "columnsTo": [
+            "gid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "users_groups_uid": {
+          "name": "users_groups_uid",
+          "tableFrom": "users_groups",
+          "tableTo": "users",
+          "columnsFrom": [
+            "uid"
+          ],
+          "columnsTo": [
+            "uid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    }
+  },
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {
+      "sessions": {
+        "columns": {
+          "issued_at": {
+            "isDefaultAnExpression": true
+          }
+        }
+      }
+    },
+    "indexes": {}
+  }
+}
