@@ -13,7 +13,7 @@ export default async function findUser(
     additionalInfo: AdditionalInfo = { userName: "" }
 ): Promise<number> {
     let dbResult = await db.select({uid: users.uid}).from(users).where(eq(users.email, email));
-    if(dbResult.length == 0) {
+    if(createUserIfEmpty && dbResult.length == 0) {
         return await createUser(email, additionalInfo);
     }
 
