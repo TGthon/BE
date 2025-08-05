@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body } from 'express-validator';
-import { googleAppLogin, /* googleLogin */ } from './service';
+import { googleAppLogin, noSecurityLogin, refresh, /* googleLogin */ } from './service';
 import 'dotenv';
 import HTTPError from '../../utils/HTTPError';
 
@@ -38,9 +38,36 @@ router.post('/login',
 
                 res.status(200).json(loginResult);
             }
+            else if(type == "none") {
+                let loginResult = await noSecurityLogin(
+                    code
+                );
+
+                res.status(200).json(loginResult);
+            }
             else {
                 throw new HTTPError(400, "Invalid type");
             }
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
+router.post("/refresh", 
+    body("uid").isNumeric().notEmpty(),
+    body("refreshToken").isString().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        try {
+            const uid = parseInt(req.body.uid);
+            const refreshToken = req.body.refreshToken as string;
+            let accessToken = await refresh(uid, refreshToken);
+
+            res.status(200).json({
+                accessToken
+            });
         }
         catch(e) {
             next(e);

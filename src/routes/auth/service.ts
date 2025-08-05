@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { db } from "../../database";
 import { sessions, users } from "../../drizzle/schema";
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import hash from '../../utils/hash';
 import { createJwtToken } from '../../utils/jwt';
 import querystring from 'querystring';
@@ -32,19 +32,23 @@ const registerRefreshToken = async (uid: number, token: string, lifetime: number
 }
 
 // 비보안 로그인, email만 주면 토큰 발행해줌
-// export const noSecurityLogin = async (email: string) => {
-//     let dbResult = await db.select({uid: users.uid}).from(users).where(eq(users.email, email));
-//     if(dbResult.length == 0)
-//         throw Error("No such user");
+export const noSecurityLogin = async (email: string) => {
 
-//     let { uid } = dbResult[0];
+    if (email.indexOf('@') == -1)
+        throw new HTTPError(400, "Invalid code");
 
-//     let refreshToken = crypto.randomBytes(32).toString('base64url');
-//     let accessToken = createJwtToken(uid);
+    let uid = await findUser(email, true, {
+        userName: "사용자",
+        profilePicture: undefined /* payload.picture || undefined */
+    });
 
-//     await registerRefreshToken(uid, refreshToken);
-//     return { uid, accessToken, refreshToken };
-// }
+    let refreshToken = crypto.randomBytes(32).toString('base64url');
+    let accessToken = createJwtToken(uid);
+
+    await registerRefreshToken(uid, refreshToken);
+
+    return { email, uid, accessToken, refreshToken };
+}
 
 // export const googleLogin = async (code: string, clientSecret: string, clientId: string): Promise<LoginResult> => {
 //     let authResult = await fetch("https://oauth2.googleapis.com/token", {
@@ -118,4 +122,19 @@ export const googleAppLogin = async (code: string, clientId: string): Promise<Lo
         console.error(e);
         throw new HTTPError(400, "Login failed");
     }
+}
+
+export const refresh = async (uid: number, refreshToken: string): Promise<string> => {
+    let hashed = hash(refreshToken);
+    let dbResult = await db.query.sessions.findFirst({
+        where: and(eq(sessions.uid, uid), eq(sessions.token, hashed))
+    });
+    if(dbResult === undefined)
+        throw new HTTPError(401, "Unauthorized");
+    if(dbResult.expiresAt < new Date()) {
+        throw new HTTPError(401, "Unauthorized");
+    }
+
+    let accessToken = await createJwtToken(uid);
+    return accessToken;
 }
