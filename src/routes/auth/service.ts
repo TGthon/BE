@@ -50,45 +50,56 @@ export const noSecurityLogin = async (email: string) => {
     return { email, uid, accessToken, refreshToken };
 }
 
-// export const googleLogin = async (code: string, clientSecret: string, clientId: string): Promise<LoginResult> => {
-//     let authResult = await fetch("https://oauth2.googleapis.com/token", {
-//         method: "POST",
-//         headers: {
-//             "Content-Type": "application/x-www-form-urlencoded",
-//         },
-//         body: querystring.stringify({
-//             code,
-//             client_id: clientId,
-//             client_secret: clientSecret,
-//             redirect_uri: "http://localhost:3000/login", 
-//             grant_type: "authorization_code",
-//         })
-//     });
+export const googleLogin = async (code: string, clientSecret: string, clientId: string): Promise<LoginResult> => {
+    let authResult = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: querystring.stringify({
+            code,
+            client_id: clientId,
+            client_secret: clientSecret,
+            redirect_uri: "http://localhost:3000/login", 
+            grant_type: "authorization_code",
+        })
+    });
 
-//     if (authResult.status != 200) {
-//         console.error(`status: ${authResult.status}`);
-//         const errorJson = await authResult.json();
-//         console.log(errorJson);
-//         if (errorJson.error === "invalid_grant")
-//             throw new HTTPError(400, "Invalid authentication code");
-//         else 
-//             throw new HTTPError(500, "Authorization failed");
-//     }
+    if (authResult.status != 200) {
+        console.error(`status: ${authResult.status}`);
+        const errorJson = await authResult.json();
+        console.log(errorJson);
+        if (errorJson.error === "invalid_grant")
+            throw new HTTPError(400, "Invalid authentication code");
+        else 
+            throw new HTTPError(500, "Authorization failed");
+    }
 
-//     let resultJson = await authResult.json();
-//     let googleAccessToken = resultJson.access_token as string;
-//     if (!googleAccessToken) {
-//         console.error("accessToken is not true");
-//         throw new HTTPError(500, "Authorization failed");
-//     }
+    let resultJson = await authResult.json();
+    let googleAccessToken = resultJson.access_token as string;
+    if (!googleAccessToken) {
+        console.error("accessToken is not true");
+        throw new HTTPError(500, "Authorization failed");
+    }
 
-//     console.log(googleAccessToken);
+    console.log(googleAccessToken);
 
-//     let userinfo = await getGoogleUserinfo(googleAccessToken);
-//     console.log(`email: ${userinfo.email}, profile: ${userinfo.profile}`);
+    let userinfo = await getGoogleUserinfo(googleAccessToken);
+    console.log(`email: ${userinfo.email}, profile: ${userinfo.profile}`);
+    const email = userinfo.email;
 
-//     return { email: userinfo.email, uid: 0, accessToken: "", refreshToken: "" };
-// }
+    let uid = await findUser(email, true, {
+        userName: /* payload.name || */ "사용자",
+        profilePicture: undefined /* payload.picture || undefined */
+    });
+
+    let refreshToken = crypto.randomBytes(32).toString('base64url');
+    let accessToken = createJwtToken(uid);
+
+    await registerRefreshToken(uid, refreshToken);
+
+    return { email, uid, accessToken, refreshToken };
+}
 
 export const googleAppLogin = async (code: string, clientId: string): Promise<LoginResult> => {
     try {
