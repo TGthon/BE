@@ -38,13 +38,13 @@ router.post('/login',
 
                 res.status(200).json(loginResult);
             }
-            else if(type == "none") {
-                let loginResult = await noSecurityLogin(
-                    code
-                );
+            // else if(type == "none") {
+            //     let loginResult = await noSecurityLogin(
+            //         code
+            //     );
 
-                res.status(200).json(loginResult);
-            }
+            //     res.status(200).json(loginResult);
+            // }
             else {
                 throw new HTTPError(400, "Invalid type");
             }
