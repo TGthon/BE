@@ -60,7 +60,7 @@ export const googleLogin = async (code: string, clientSecret: string, clientId: 
             code,
             client_id: clientId,
             client_secret: clientSecret,
-            redirect_uri: "http://localhost:3000/login", 
+            redirect_uri: "https://api.ldh.monster/api/auth/googleCallback", 
             grant_type: "authorization_code",
         })
     });
