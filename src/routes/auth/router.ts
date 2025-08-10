@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
-import { body } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import { googleAppLogin, noSecurityLogin, refresh, /* googleLogin */ } from './service';
 import 'dotenv';
 import HTTPError from '../../utils/HTTPError';
@@ -68,6 +68,20 @@ router.post("/refresh",
             res.status(200).json({
                 accessToken
             });
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
+router.get("/googleCallback",
+    query("id_token").isString().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        try {
+            const token = req.query.id_token as string;
+            res.redirect(`daypick://?id_token=${token}`)
         }
         catch(e) {
             next(e);
