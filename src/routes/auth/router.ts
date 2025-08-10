@@ -78,15 +78,12 @@ router.post("/refresh",
 router.get("/googleCallback",
     query("code").isString().notEmpty(),
     query("state").isString().notEmpty(),
-    query("scope").isString().notEmpty(),
-    query("authuser").isString().notEmpty(),
-    query("prompt").isString().notEmpty(),
     validatorErrorChecker,
     async (req, res, next) => {
         try {
             const token = req.query.code as string;
             const state = req.query.state as string;
-            res.redirect(`daypick://?code=${token}&state=${state}`)
+            res.redirect(`daypick://?code=${encodeURI(token)}&state=${encodeURI(state)}`)
         }
         catch(e) {
             next(e);
