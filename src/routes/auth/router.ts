@@ -83,7 +83,7 @@ router.get("/googleCallback",
         try {
             const token = req.query.code as string;
             const state = req.query.state as string;
-            res.redirect(`daypick://?code=${encodeURI(token)}&state=${encodeURI(state)}`)
+            res.redirect(`daypick://?code=${encodeURIComponent(token)}&state=${encodeURIComponent(state)}`)
         }
         catch(e) {
             next(e);
