@@ -12,6 +12,6 @@ router.use('/auth', authRouter);
 router.use('/calendar', calendarRouter);
 router.use('/event', eventRouter);
 router.use('/friends', friendsRouter);
-router.use('/voteRouter', voteRouter);
+router.use('/vote', voteRouter);
 
 export default router;
