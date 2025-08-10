@@ -50,7 +50,7 @@ export const noSecurityLogin = async (email: string) => {
     return { email, uid, accessToken, refreshToken };
 }
 
-export const googleLogin = async (code: string, clientSecret: string, clientId: string): Promise<LoginResult> => {
+export const googleCodeLogin = async (code: string, clientSecret: string, clientId: string): Promise<LoginResult> => {
     let authResult = await fetch("https://oauth2.googleapis.com/token", {
         method: "POST",
         headers: {
@@ -101,7 +101,7 @@ export const googleLogin = async (code: string, clientSecret: string, clientId: 
     return { email, uid, accessToken, refreshToken };
 }
 
-export const googleAppLogin = async (code: string, clientId: string): Promise<LoginResult> => {
+export const googleIdTokenLogin = async (code: string, clientId: string): Promise<LoginResult> => {
     try {
         const ticket = await oauthClient.verifyIdToken({
             idToken: code,
