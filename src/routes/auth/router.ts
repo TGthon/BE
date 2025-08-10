@@ -76,12 +76,14 @@ router.post("/refresh",
 )
 
 router.get("/googleCallback",
-    query("id_token").isString().notEmpty(),
+    query("code").isString().notEmpty(),
+    query("state").isString().notEmpty(),
     validatorErrorChecker,
     async (req, res, next) => {
         try {
-            const token = req.query.id_token as string;
-            res.redirect(`daypick://?id_token=${token}`)
+            const token = req.query.code as string;
+            const state = req.query.state as string;
+            res.redirect(`daypick://?code=${token}&state=${state}`)
         }
         catch(e) {
             next(e);
