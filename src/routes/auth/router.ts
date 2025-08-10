@@ -78,6 +78,9 @@ router.post("/refresh",
 router.get("/googleCallback",
     query("code").isString().notEmpty(),
     query("state").isString().notEmpty(),
+    query("scope").isString().notEmpty(),
+    query("authuser").isString().notEmpty(),
+    query("prompt").isString().notEmpty(),
     validatorErrorChecker,
     async (req, res, next) => {
         try {
