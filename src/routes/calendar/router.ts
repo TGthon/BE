@@ -9,7 +9,7 @@ const router = Router();
 router.use(express.urlencoded({ extended: false }));
 
 router.get('/',
-    //jwtVerifier,
+    jwtVerifier,
     query("month").isNumeric(),
     validatorErrorChecker,
     async (req, res, next) => {
