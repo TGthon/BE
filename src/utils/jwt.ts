@@ -15,6 +15,7 @@ export const createJwtToken = (uid: number, lifetime: number = 300) => {
     return token;
 }
 
+// todo: exp값이 없거나 등등의 경우 문제가 생김
 export const verifyJwtToken = (token: string) => {
     try {
         const payload = jwt.verify(
