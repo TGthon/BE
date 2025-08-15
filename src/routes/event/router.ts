@@ -1,11 +1,12 @@
 import express, { Router } from 'express';
 import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { getEventlist } from './service';
+import { createEvent, getEventlist, joinEvent } from './service';
 
 const router = Router();
+router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
 
 router.get('/', 
@@ -20,6 +21,66 @@ router.get('/',
         catch(e) {
             next(e);
         }
+    }
+)
+
+router.post('/', 
+    jwtVerifier,
+    body("start").toInt().notEmpty(),
+    body("end").toInt().notEmpty(),
+    body("users").isArray().notEmpty(),
+    body("users.*").toInt(),
+    body("groups").isArray().notEmpty(),
+    body("groups.*").toInt(),
+    body("duration").toInt().notEmpty(),
+    body("name").isString().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        try {
+            let start = req.body.start as number;
+            let end = req.body.end as number;
+            let users = req.body.users as number[];
+            let groups = req.body.groups as number[];
+            let duration = req.body.duration as number;
+            let name = req.body.name as string;
+
+            await createEvent(req.uid!, {
+                start,
+                end,
+                users,
+                groups,
+                duration,
+                name,
+            });
+            res.status(200).json({ok: true});
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
+// todo
+router.get("/:eventid", 
+    jwtVerifier,
+    param("eventid").isNumeric().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        res.status(200).send(req.params.eventid);
+    }
+)
+
+router.post("/:eventid/user", 
+    jwtVerifier,
+    param("eventid").isNumeric().notEmpty(),
+    body("user").toInt().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        let eventid = parseInt(req.params.eventid);
+        let user = req.body.user as number;
+
+        await joinEvent(user, eventid, req.uid!);
+        res.status(200).send({ok: true});
     }
 )
 

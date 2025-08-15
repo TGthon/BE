@@ -2,7 +2,7 @@ import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, foreignKey, primaryKey,
 import { sql } from "drizzle-orm"
 
 export const events = mysqlTable("events", {
-	eventid: bigint({ mode: "number" }).autoincrement().notNull(),
+	eventid: bigint({ mode: "number" }).primaryKey().autoincrement().notNull(),
 	gid: bigint({ mode: "number" }).references(() => groups.gid),
 	name: varchar({ length: 50 }).notNull(),
 	peopleCnt: int("people_cnt").default(0).notNull(),
