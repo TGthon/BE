@@ -49,6 +49,7 @@ export const createEvent = async (uid: number, data: {
 
     const eventid = result[0].eventid;
     await joinEvent(uid, eventid);
+    return eventid;
 }
 
 export const joinEvent = async (uid: number, eventid: number, inviter?: number) => {

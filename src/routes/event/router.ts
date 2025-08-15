@@ -44,7 +44,7 @@ router.post('/',
             let duration = req.body.duration as number;
             let name = req.body.name as string;
 
-            await createEvent(req.uid!, {
+            let eventid = await createEvent(req.uid!, {
                 start,
                 end,
                 users,
@@ -52,7 +52,7 @@ router.post('/',
                 duration,
                 name,
             });
-            res.status(200).json({ok: true});
+            res.status(200).json({ eventid });
         }
         catch(e) {
             next(e);
