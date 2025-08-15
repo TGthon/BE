@@ -66,7 +66,12 @@ router.get("/:eventid",
     param("eventid").isNumeric().notEmpty(),
     validatorErrorChecker,
     async (req, res, next) => {
-        res.status(200).send(req.params.eventid);
+        try {
+            res.status(200).send(req.params.eventid);
+        }
+        catch(e) {
+            next(e);
+        }
     }
 )
 
@@ -76,11 +81,16 @@ router.post("/:eventid/user",
     body("user").toInt().notEmpty(),
     validatorErrorChecker,
     async (req, res, next) => {
-        let eventid = parseInt(req.params.eventid);
-        let user = req.body.user as number;
+        try {
+            let eventid = parseInt(req.params.eventid);
+            let user = req.body.user as number;
 
-        await joinEvent(user, eventid, req.uid!);
-        res.status(200).send({ok: true});
+            await joinEvent(user, eventid, req.uid!);
+            res.status(200).send({ok: true});
+        }
+        catch(e) {
+            next(e);
+        }
     }
 )
 
