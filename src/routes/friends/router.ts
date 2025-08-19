@@ -19,29 +19,29 @@ import { db } from '../../database';
 import { users } from '../../drizzle/schema';
 import { and, eq, or } from 'drizzle-orm';
 import { userFriends } from '../../drizzle/schema';
+import jwtVerifier from '../../middlewares/jwtVerifier';
 
 const router = Router();
+router.use(jwtVerifier);
 
 router.post(
     '/add',
     [
-        body('userEmail').isEmail().withMessage('유저 이메일 형식이 올바르지 않습니다'),
         body('friendEmail').isEmail().withMessage('친구 이메일 형식이 올바르지 않습니다'),
         validatorErrorChecker,
     ],
     async (req: Request, res: Response, next: NextFunction) => {
-        const { userEmail, friendEmail } = req.body;
+        const { friendEmail } = req.body;
+        const userEmail = req.uid;
 
         try {
-            const user = await db.select().from(users).where(eq(users.email, userEmail));
+            const user = await db.select().from(users).where(eq(users.email, userEmail as unknown as string));
             const friend = await db.select().from(users).where(eq(users.email, friendEmail));
 
             if (!user.length || !friend.length) {
                 return res.status(404).json({ message: '사용자 또는 친구를 찾을 수 없습니다' });
             }
 
-            // 친구 관계 저장 로직 추가 필요 (예: usersFriends 테이블이 있다면 거기에 insert)
-            // 중복 친구 추가 방지
             const existing = await db
                 .select()
                 .from(userFriends)
