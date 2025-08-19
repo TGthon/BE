@@ -17,41 +17,71 @@ import { body } from 'express-validator';
 import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { db } from '../../database';
 import { users } from '../../drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq, or } from 'drizzle-orm';
+import { userFriends } from '../../drizzle/schema';
 
 const router = Router();
 
 router.post(
-  '/add',
-  [
-    body('userEmail').isEmail().withMessage('유저 이메일 형식이 올바르지 않습니다'),
-    body('friendEmail').isEmail().withMessage('친구 이메일 형식이 올바르지 않습니다'),
-    validatorErrorChecker,
-  ],
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { userEmail, friendEmail } = req.body;
+    '/add',
+    [
+        body('userEmail').isEmail().withMessage('유저 이메일 형식이 올바르지 않습니다'),
+        body('friendEmail').isEmail().withMessage('친구 이메일 형식이 올바르지 않습니다'),
+        validatorErrorChecker,
+    ],
+    async (req: Request, res: Response, next: NextFunction) => {
+        const { userEmail, friendEmail } = req.body;
 
-    try {
-      const user = await db.select().from(users).where(eq(users.email, userEmail));
-      const friend = await db.select().from(users).where(eq(users.email, friendEmail));
+        try {
+            const user = await db.select().from(users).where(eq(users.email, userEmail));
+            const friend = await db.select().from(users).where(eq(users.email, friendEmail));
 
-      if (!user.length || !friend.length) {
-        return res.status(404).json({ message: '사용자 또는 친구를 찾을 수 없습니다' });
-      }
+            if (!user.length || !friend.length) {
+                return res.status(404).json({ message: '사용자 또는 친구를 찾을 수 없습니다' });
+            }
 
-      // 친구 관계 저장 로직 추가 필요 (예: usersFriends 테이블이 있다면 거기에 insert)
+            // 친구 관계 저장 로직 추가 필요 (예: usersFriends 테이블이 있다면 거기에 insert)
+            // 중복 친구 추가 방지
+            const existing = await db
+                .select()
+                .from(userFriends)
+                .where(
+                    or(
+                        and(
+                            eq(userFriends.userId, user[0].uid),
+                            eq(userFriends.friendId, friend[0].uid)
+                        ),
+                        and(
+                            eq(userFriends.userId, friend[0].uid),
+                            eq(userFriends.friendId, user[0].uid)
+                        )
+                    )
+                );
 
-      res.json({
-        friend: {
-          uid: friend[0].uid,
-          name: friend[0].name,
-          email: friend[0].email,
-        },
-      });
-    } catch (err) {
-      next(err);
+            if (existing.length) {
+                return res.status(400).json({ message: '이미 친구로 추가되어 있습니다' });
+            }
+
+            // 친구 관계 저장
+            await db.insert(userFriends).values({
+                userId: user[0].uid,
+                friendId: friend[0].uid,
+            });
+
+
+            res.json({
+                friend: {
+                    uid: friend[0].uid,
+                    name: friend[0].name,
+                    email: friend[0].email,
+                },
+            });
+        } catch (err) {
+            next(err);
+        }
     }
-  }
 );
+
+
 
 export default router;
