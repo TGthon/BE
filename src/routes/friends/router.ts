@@ -48,12 +48,12 @@ router.post(
                 .where(
                     or(
                         and(
-                            eq(userFriends.userId, user[0].uid),
-                            eq(userFriends.friendId, friend[0].uid)
+                            eq(userFriends.uid1, user[0].uid),
+                            eq(userFriends.uid2, friend[0].uid)
                         ),
                         and(
-                            eq(userFriends.userId, friend[0].uid),
-                            eq(userFriends.friendId, user[0].uid)
+                            eq(userFriends.uid1, friend[0].uid),
+                            eq(userFriends.uid2, user[0].uid)
                         )
                     )
                 );
@@ -64,8 +64,8 @@ router.post(
 
             // 친구 관계 저장
             await db.insert(userFriends).values({
-                userId: user[0].uid,
-                friendId: friend[0].uid,
+                uid1: user[0].uid,
+                uid2: friend[0].uid,
             });
 
 

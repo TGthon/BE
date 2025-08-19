@@ -90,11 +90,10 @@ export const votes = mysqlTable("votes", {
 ]);
 
 export const userFriends = mysqlTable("user_friends", {
-	id: bigint({ mode: "number" }).primaryKey().autoincrement().notNull(),
-	userId: bigint({ mode: "number" }).notNull().references(() => users.uid, { onDelete: "cascade" }),
-	friendId: bigint({ mode: "number" }).notNull().references(() => users.uid, { onDelete: "cascade" }),
+	uid1: bigint({ mode: "number" }).primaryKey().notNull().references(() => users.uid),
+	uid2: bigint({ mode: "number" }).primaryKey().notNull().references(() => users.uid),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => [
-	index("user_friends_user_idx").on(table.userId),
-	index("user_friends_friend_idx").on(table.friendId),
+},
+(table) => [
+	primaryKey({ columns: [table.uid1, table.uid2], name: "user_friends_uid1_uid2"}),
 ]);
