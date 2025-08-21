@@ -84,12 +84,17 @@ export const joinEvent = async (uid: number, eventid: number, inviter?: number) 
     });
 }
 
+// 나에게 보여지는 이름만 수정한다!
 export const changeEventname = async (uid: number, eventid: number, name: string) => {
-    await db.update(usersEvents).set({
+    let dbResult = await db.update(usersEvents).set({
         name
     })
     .where(and(
         eq(usersEvents.uid, uid),
         eq(usersEvents.eventid, eventid)
     ));
+    // 유저가 그 이벤트에 속해있지 않음
+    if (dbResult[0].affectedRows == 0) {
+        throw new HTTPError(400, "Bad request");
+    }
 }
