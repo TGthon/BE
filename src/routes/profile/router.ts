@@ -8,6 +8,7 @@ import Busboy from 'busboy';
 import sharp from 'sharp';
 import { pipeline } from 'stream/promises';
 import fs from 'fs';
+import { v4 } from 'uuid';
 
 import 'dotenv';
 

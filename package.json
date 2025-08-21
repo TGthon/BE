@@ -17,6 +17,7 @@
     "@types/dotenv": "^6.1.1",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/sharp": "^0.31.1",
+    "@types/uuid": "^10.0.0",
     "busboy": "^1.6.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
@@ -26,7 +27,8 @@
     "google-auth-library": "^10.2.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.3",
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.3",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
