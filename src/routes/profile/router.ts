@@ -5,6 +5,11 @@ import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
 import { getProfile } from './service';
 import Busboy from 'busboy';
+import sharp from 'sharp';
+import { pipeline } from 'stream/promises';
+import fs from 'fs';
+
+import 'dotenv';
 
 const router = Router();
 router.use(express.urlencoded({ extended: false }));
@@ -50,7 +55,12 @@ router.put('/me/picture',
 
                 // todo
                 promises.push((async () => {
-                    
+                    await pipeline(
+                        file,
+                        sharp().resize(500, 500)
+                        .toFormat('jpeg', { quality: 70 }),
+                        fs.createWriteStream(`${process.env.IMAGE_FOLDER_PATH}/test.jpg`)
+                    );
                 })());
             });
             busboy.on('close', async () => {
