@@ -3,7 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { getProfile } from './service';
+import { getProfile, updateProfilePicture } from './service';
 import Busboy from 'busboy';
 import sharp from 'sharp';
 import { pipeline } from 'stream/promises';
@@ -63,12 +63,19 @@ router.put('/me/picture',
                 processed = true;
             });
             busboy.on('close', async () => {
-                await Promise.all(promises);
-                if (processed) {
-                    res.status(200).json({ picture: `https://api.ldh.monster/images/${fileID}.jpg` });
+                try {
+                    await Promise.all(promises);
+                    if (processed) {
+                        const picture = `https://api.ldh.monster/images/${fileID}.jpg`;
+                        await updateProfilePicture(req.uid!, picture);
+                        res.status(200).json({ picture });
+                    }
+                    else {
+                        next(new HTTPError(400, "Bad request"));
+                    }
                 }
-                else {
-                    next(new HTTPError(400, "Bad request"));
+                catch(e) {
+                    next(e);
                 }
             });
             req.pipe(busboy);

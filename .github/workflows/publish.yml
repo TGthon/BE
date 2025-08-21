@@ -39,5 +39,5 @@ jobs:
           cd /deploy
           docker load < ${{ steps.string.outputs.lowercase }}.tar.gz
           docker stop ${{ steps.string.outputs.lowercase }} 
-          docker run -d --rm --name ${{ steps.string.outputs.lowercase }} -p 10001:3000 --env-file .env.${{ steps.string.outputs.lowercase }} ${{ steps.string.outputs.lowercase }}
+          docker run -d --rm --name ${{ steps.string.outputs.lowercase }} -v /images:/images -p 10001:3000 --env-file .env.${{ steps.string.outputs.lowercase }} ${{ steps.string.outputs.lowercase }}
         EOF

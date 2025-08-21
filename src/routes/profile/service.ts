@@ -18,3 +18,9 @@ export const getProfile = async (uid: number): Promise<Profile> => {
         picture: dbResult[0].picture || undefined
     }
 }
+
+export const updateProfilePicture = async (uid: number, picture: string) => {
+    await db.update(users).set({
+        profilePicture: picture,
+    }).where(eq(users.uid, uid));
+}
