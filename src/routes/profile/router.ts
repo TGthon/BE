@@ -43,8 +43,9 @@ router.put('/me/picture',
             let promises: Promise<any>[] = []; // 어차피 하나밖에 없긴 하지만 없을때 처리가 이게 더 편해서 일케 함!
             const fileID = v4();
 
+            const mimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/svg"]);
             busboy.on('file', (fieldname, file, fileinfo) => {
-                if (fieldname != 'picture' || !fileinfo.mimeType.startsWith('image/')) {
+                if (fieldname != 'picture' || mimeTypes.has(fileinfo.mimeType)) {
                     file.resume();
                     return;
                 }
