@@ -16,6 +16,7 @@ type LoginResult = {
     uid: number,
     accessToken: string,
     refreshToken: string,
+    name?: string, // 구글 로그인 시 사용자 이름
 }
 
 // DB에 토큰 저장
@@ -85,8 +86,12 @@ export const googleCodeLogin = async (code: string, clientSecret: string, client
     console.log(googleAccessToken);
 
     let userinfo = await getGoogleUserinfo(googleAccessToken);
-    console.log(`email: ${userinfo.email}, profile: ${userinfo.profile}`);
+    console.log(`email: ${userinfo.email}, name: ${userinfo.name}, picture: ${userinfo.picture}`);
+
     const email = userinfo.email;
+    const name = userinfo.name;
+    const picture = userinfo.picture;
+
 
     let uid = await findUser(email, true, {
         userName: /* payload.name || */ "사용자",
@@ -98,7 +103,7 @@ export const googleCodeLogin = async (code: string, clientSecret: string, client
 
     await registerRefreshToken(uid, refreshToken);
 
-    return { email, uid, accessToken, refreshToken };
+    return { email, uid, accessToken, refreshToken, name: userinfo.name };
 }
 
 export const googleIdTokenLogin = async (code: string, clientId: string): Promise<LoginResult> => {
@@ -127,7 +132,7 @@ export const googleIdTokenLogin = async (code: string, clientId: string): Promis
 
         await registerRefreshToken(uid, refreshToken);
 
-        return { email, uid, accessToken, refreshToken };
+        return { email, uid, accessToken, refreshToken, name: payload.name };
     }
     catch(e) {
         console.error(e);

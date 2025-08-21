@@ -3,7 +3,8 @@ import HTTPError from './HTTPError';
 
 type Userinfo = {
     email: string,
-    profile: string,
+    name: string,
+    picture: string;
 }
 
 export default async function getGoogleUserinfo(accessToken: string): Promise<Userinfo> {
@@ -24,6 +25,7 @@ export default async function getGoogleUserinfo(accessToken: string): Promise<Us
 
     return {
         email: resultJson.email.toString(),
-        profile: resultJson.picture.toString(),
+        name: resultJson.name?.toString() ?? '이름 없음',
+        picture: resultJson.picture.toString()
     }
 }
