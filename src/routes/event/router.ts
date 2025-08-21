@@ -3,7 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, param } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { changeEventname, createEvent, getEventlist, joinEvent } from './service';
+import { changeEventname, createEvent, exitEvent, getEventlist, joinEvent } from './service';
 
 const router = Router();
 router.use(express.json());
@@ -106,6 +106,24 @@ router.put("/:eventid/name",
 
             await changeEventname(req.uid!, eventid, name);
             res.status(200).json({ name });
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
+// 이벤트에서 탈퇴한다!
+router.delete("/:eventid/user/me",
+    jwtVerifier,
+    param("eventid").isNumeric().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        try {
+            let eventid = parseInt(req.params.eventid);
+
+            await exitEvent(req.uid!, eventid);
+            res.status(200).json({ ok: true });
         }
         catch(e) {
             next(e);
