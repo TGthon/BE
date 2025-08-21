@@ -4,6 +4,8 @@ import { Request, Response, NextFunction } from 'express';
 import HTTPError from './utils/HTTPError';
 import cors from 'cors';
 
+import 'dotenv';
+
 const app = express();
 
 // for development
@@ -15,6 +17,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use('/api', router);
+app.use('/images', express.static(process.env.IMAGE_FOLDER_PATH!));
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof HTTPError) {

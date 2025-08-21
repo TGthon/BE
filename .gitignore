@@ -201,3 +201,8 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,node
+
+
+
+# 이미지 폴더 로컬에서 테스트 한거 깃에 안올라가게
+images/
