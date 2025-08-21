@@ -50,7 +50,7 @@ export const users = mysqlTable("users", {
 	uid: bigint({ mode: "number" }).primaryKey().autoincrement().notNull(),
 	name: varchar({ length: 50 }).notNull(),
 	email: varchar({ length: 255 }).notNull(),
-	profilePicture: varchar("profile_picture", { length: 36 }),
+	profilePicture: varchar("profile_picture", { length: 255 }),
 },
 (table) => [
 	index("email").on(table.email),

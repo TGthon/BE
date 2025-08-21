@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, param, query } from 'express-validator';
-import { googleCodeLogin, googleIdTokenLogin, noSecurityLogin, refresh, /* googleLogin */ } from './service';
+import { googleCodeLogin, googleIdTokenLogin, /* noSecurityLogin, */ refresh, /* googleLogin */ } from './service';
 import 'dotenv';
 import HTTPError from '../../utils/HTTPError';
 

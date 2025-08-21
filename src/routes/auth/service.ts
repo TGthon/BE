@@ -16,7 +16,7 @@ type LoginResult = {
     uid: number,
     accessToken: string,
     refreshToken: string,
-    name?: string,
+    name: string,
     picture?: string,
 }
 
@@ -34,23 +34,23 @@ const registerRefreshToken = async (uid: number, token: string, lifetime: number
 }
 
 // 비보안 로그인, email만 주면 토큰 발행해줌
-export const noSecurityLogin = async (email: string) => {
+// export const noSecurityLogin = async (email: string) => {
 
-    if (email.indexOf('@') == -1)
-        throw new HTTPError(400, "Invalid code");
+//     if (email.indexOf('@') == -1)
+//         throw new HTTPError(400, "Invalid code");
 
-    let uid = await findUser(email, true, {
-        userName: "사용자",
-        profilePicture: "https://via.placeholder.com/80"
-    });
+//     let { uid, name, picture } = await findUser(email, true, {
+//         userName: "사용자",
+//         profilePicture: undefined
+//     });
 
-    let refreshToken = crypto.randomBytes(32).toString('base64url');
-    let accessToken = createJwtToken(uid);
+//     let refreshToken = crypto.randomBytes(32).toString('base64url');
+//     let accessToken = createJwtToken(uid);
 
-    await registerRefreshToken(uid, refreshToken);
+//     await registerRefreshToken(uid, refreshToken);
 
-    return { email, uid, accessToken, refreshToken, name: "사용자", picture: "https://via.placeholder.com/80" };
-}
+//     return { email, uid, accessToken, refreshToken, name, picture };
+// }
 
 export const googleCodeLogin = async (code: string, clientSecret: string, clientId: string): Promise<LoginResult> => {
     let authResult = await fetch("https://oauth2.googleapis.com/token", {
@@ -90,13 +90,10 @@ export const googleCodeLogin = async (code: string, clientSecret: string, client
     console.log(`email: ${userinfo.email}, name: ${userinfo.name}, picture: ${userinfo.picture}`);
 
     const email = userinfo.email;
-    const name = userinfo.name;
-    const picture = userinfo.picture;
 
-
-    let uid = await findUser(email, true, {
-        userName: name || "사용자",
-        profilePicture: picture || undefined
+    let { uid, name, picture } = await findUser(email, true, {
+        userName: userinfo.name,
+        profilePicture: userinfo.picture
     });
 
     let refreshToken = crypto.randomBytes(32).toString('base64url');
@@ -104,7 +101,7 @@ export const googleCodeLogin = async (code: string, clientSecret: string, client
 
     await registerRefreshToken(uid, refreshToken);
 
-    return { email, uid, accessToken, refreshToken, name: userinfo.name, picture: userinfo.picture };
+    return { email, uid, accessToken, refreshToken, name, picture };
 }
 
 export const googleIdTokenLogin = async (code: string, clientId: string): Promise<LoginResult> => {
@@ -123,9 +120,9 @@ export const googleIdTokenLogin = async (code: string, clientId: string): Promis
 
         const email = payload.email;
 
-        let uid = await findUser(email, true, {
+        let { uid, name, picture } = await findUser(email, true, {
             userName: payload.name || "사용자",
-            profilePicture: payload.picture || "https://via.placeholder.com/80"
+            profilePicture: payload.picture
         });
 
         let refreshToken = crypto.randomBytes(32).toString('base64url');
@@ -133,7 +130,7 @@ export const googleIdTokenLogin = async (code: string, clientId: string): Promis
 
         await registerRefreshToken(uid, refreshToken);
 
-        return { email, uid, accessToken, refreshToken, name: payload.name, picture: payload.picture };
+        return { email, uid, accessToken, refreshToken, name, picture };
     }
     catch(e) {
         console.error(e);
