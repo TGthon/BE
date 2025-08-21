@@ -83,3 +83,13 @@ export const joinEvent = async (uid: number, eventid: number, inviter?: number) 
         }).where(eq(events.eventid, eventid));
     });
 }
+
+export const changeEventname = async (uid: number, eventid: number, name: string) => {
+    await db.update(usersEvents).set({
+        name
+    })
+    .where(and(
+        eq(usersEvents.uid, uid),
+        eq(usersEvents.eventid, eventid)
+    ));
+}

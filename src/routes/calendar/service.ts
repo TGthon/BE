@@ -7,7 +7,7 @@ type Calendar = {
     users: string[],
 }
 
-export const getCalendar = async (uid: number, month: string): Promise<Calendar[]> => {
+export const getCalendar = async (uid: number, year: string | undefined, month: string | undefined): Promise<Calendar[]> => {
     return [
         {
             start: new Date(2025, 8-1, 13, 12, 0, 0).getTime() / 1000,

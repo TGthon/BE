@@ -3,7 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, param } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { createEvent, getEventlist, joinEvent } from './service';
+import { changeEventname, createEvent, getEventlist, joinEvent } from './service';
 
 const router = Router();
 router.use(express.json());
@@ -87,6 +87,25 @@ router.post("/:eventid/user",
 
             await joinEvent(user, eventid, req.uid!);
             res.status(200).send({ok: true});
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
+router.put("/:eventid/name",
+    jwtVerifier,
+    param("eventid").isNumeric().notEmpty(),
+    body("name").isString().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        try {
+            let eventid = parseInt(req.params.eventid);
+            let name = req.body.name as string;
+
+            await changeEventname(req.uid!, eventid, name);
+            res.status(200).json({ name });
         }
         catch(e) {
             next(e);
