@@ -44,7 +44,7 @@ router.put('/me/picture',
             const fileID = v4();
 
             busboy.on('file', (fieldname, file, fileinfo) => {
-                if (fieldname != 'picture' || fileinfo.mimeType != 'image/jpeg') {
+                if (fieldname != 'picture' || !fileinfo.mimeType.startsWith('image/')) {
                     file.resume();
                     return;
                 }
