@@ -33,21 +33,36 @@ router.put('/me/picture',
 
             const busboy = Busboy({ headers: req.headers });
 
-            let isFirst = true;
+            let processed = false;
+            let promises: Promise<any>[] = []; // 어차피 하나밖에 없긴 하지만 없을때 처리가 이게 더 편해서 일케 함!
 
             busboy.on('file', (fieldname, file, fileinfo) => {
-                if (fileinfo.filename != 'image.jpg' || fileinfo.mimeType != 'image/jpeg')
+                if (fieldname != 'picture' || fileinfo.mimeType != 'image/jpeg') {
+                    file.resume();
                     return;
-                if (!isFirst)
+                }
+                if (processed) {
+                    file.resume();
                     return;
+                }
 
-                isFirst = false;
+                processed = true;
 
                 // todo
+                promises.push((async () => {
+                    
+                })());
             });
-            busboy.on('close', () => {
-
+            busboy.on('close', async () => {
+                await Promise.all(promises);
+                if (processed) {
+                    res.status(200).json({ ok: true });
+                }
+                else {
+                    next(new HTTPError(400, "Bad request"));
+                }
             });
+            req.pipe(busboy);
         }
         catch(e) {
             next(e);
