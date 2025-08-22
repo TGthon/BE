@@ -1,6 +1,6 @@
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../database"
-import { events, users, usersEvents, votes } from "../../drizzle/schema";
+import { events, users, usersEvents, usersGroups, votes } from "../../drizzle/schema";
 import HTTPError from "../../utils/HTTPError";
 
 type EventItem = {
@@ -42,14 +42,45 @@ export const createEvent = async (uid: number, data: {
     duration: number,
     name: string
 }) => {
-    const result = await db.insert(events).values({
-        name: data.name,
-        peopleCnt: 0
-    }).$returningId();
+    //await joinEvent(uid, eventid);
+    return await db.transaction(async tx => {
+        try {
+            let groupUidList = await tx.select({
+                uid: usersGroups.uid
+            }).from(usersGroups).where(inArray(usersGroups.gid, data.groups));
 
-    const eventid = result[0].eventid;
-    await joinEvent(uid, eventid);
-    return eventid;
+            let uidList = [uid, ...data.users, ...groupUidList.map(g => g.uid)];
+            uidList = [...new Set(uidList)]; // 중복 제거
+            // 어차피 정렬하고 for문돌아도 이거랑 시간 복잡도가 같다!!
+
+            const result = await tx.insert(events).values({
+                name: data.name,
+                peopleCnt: uidList.length
+            }).$returningId();
+
+            const eventid = result[0].eventid;
+
+            await tx.insert(usersEvents).values(uidList.map(u => ({
+                uid: u,
+                eventid
+            })));
+            // 이런 쿼리로 잘 차력쇼 해서 간지나는 insert를 하고 싶엇지만
+            // 이거 너무 어려운걸
+            // await tx.insert(usersEvents).select(
+            //     tx.select({
+            //         uid: usersGroups.uid, 
+            //         eventid: sql`${eventid}`.as('eventid'),
+            //         name: sql`null`.as('name')
+            //     }).from(usersGroups).where(inArray(usersGroups.gid, data.groups))
+            // )
+
+            return eventid;
+        }
+        catch(e) {
+            console.error(e);
+            throw e;
+        }
+    });
 }
 
 // 유저가 속해있지 않은 이벤트면 403 반환!!
