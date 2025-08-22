@@ -7,6 +7,7 @@ import HTTPError from '../../utils/HTTPError';
 
 const router = Router();
 router.use(express.urlencoded({ extended: false }));
+router.use(express.json());
 
 router.post('/login', 
     body("type").isString().notEmpty(),

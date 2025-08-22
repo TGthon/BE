@@ -52,6 +52,19 @@ export const createEvent = async (uid: number, data: {
     return eventid;
 }
 
+// 유저가 속해있지 않은 이벤트면 403 반환!!
+export const getEventInfo = async (uid: number, eventid: number) => {
+    let result = await db.select({count: count()}).from(usersEvents).where(and(
+        eq(usersEvents.uid, uid),
+        eq(usersEvents.eventid, eventid)
+    ));
+    if (result[0].count == 0) {
+        throw new HTTPError(403, "Forbidden");
+    }
+
+    
+}
+
 export const joinEvent = async (uid: number, eventid: number, inviter?: number) => {
     await db.transaction(async tx => {
         // 초대자가 그룹에 속해있는지 검사
