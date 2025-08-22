@@ -7,6 +7,7 @@ import { getCalendar } from './service';
 
 const router = Router();
 router.use(express.urlencoded({ extended: false }));
+router.use(express.json());
 
 // year, month는 없을 수도 있다
 // 그래도 조건에 맞는 모든 값을 쿼리해 온다!

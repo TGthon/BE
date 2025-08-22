@@ -14,6 +14,7 @@ import 'dotenv';
 
 const router = Router();
 router.use(express.urlencoded({ extended: false }));
+router.use(express.json());
 
 router.get('/me', 
     jwtVerifier,

@@ -152,3 +152,20 @@ export const refresh = async (uid: number, refreshToken: string): Promise<string
     let accessToken = await createJwtToken(uid);
     return accessToken;
 }
+
+export const logout = async (uid: number, refreshToken: string) => {
+    let hashed = hash(refreshToken);
+    let dbResult = await db.query.sessions.findFirst({
+        where: and(eq(sessions.uid, uid), eq(sessions.token, hashed))
+    });
+    if(dbResult === undefined)
+        throw new HTTPError(401, "Unauthorized");
+    if(dbResult.expiresAt < new Date()) {
+        throw new HTTPError(401, "Unauthorized");
+    }
+
+    await db.delete(sessions).where(and(
+        eq(sessions.uid, uid),
+        eq(sessions.token, hashed)
+    ));
+}

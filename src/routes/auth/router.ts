@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, param, query } from 'express-validator';
-import { googleCodeLogin, googleIdTokenLogin, /* noSecurityLogin, */ refresh, /* googleLogin */ } from './service';
+import { googleCodeLogin, googleIdTokenLogin, logout, /* noSecurityLogin, */ refresh, /* googleLogin */ } from './service';
 import 'dotenv';
 import HTTPError from '../../utils/HTTPError';
 
@@ -69,6 +69,24 @@ router.post("/refresh",
             res.status(200).json({
                 accessToken
             });
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
+router.post("/logout",
+    body("uid").isNumeric().notEmpty(),
+    body("refreshToken").isString().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        try {
+            const uid = parseInt(req.body.uid);
+            const refreshToken = req.body.refreshToken as string;
+
+            await logout(uid, refreshToken);
+            res.status(200).json({ message: "Bye Bye" });
         }
         catch(e) {
             next(e);
