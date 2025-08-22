@@ -3,7 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, param } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { changeEventname, createEvent, exitEvent, getEventlist, joinEvent } from './service';
+import { changeEventname, createEvent, exitEvent, getEventInfo, getEventlist, joinEvent } from './service';
 
 const router = Router();
 router.use(express.json());
@@ -60,14 +60,17 @@ router.post('/',
     }
 )
 
-// todo
 router.get("/:eventid", 
     jwtVerifier,
     param("eventid").isNumeric().notEmpty(),
     validatorErrorChecker,
     async (req, res, next) => {
         try {
-            res.status(200).send(req.params.eventid);
+            const uid = req.uid!;
+            const eventid = parseInt(req.params.eventid);
+
+            let result = await getEventInfo(uid, eventid);
+            res.status(200).json(result);
         }
         catch(e) {
             next(e);

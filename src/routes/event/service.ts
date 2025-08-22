@@ -53,6 +53,8 @@ export const createEvent = async (uid: number, data: {
 }
 
 // 유저가 속해있지 않은 이벤트면 403 반환!!
+// 이 데이터가 트랜젝션을 할정도로 중요하진 않은거 같으니
+// 트랜젝션은 안 하고 그냥 주겟습니다.
 export const getEventInfo = async (uid: number, eventid: number) => {
     let result = await db.select({count: count()}).from(usersEvents).where(and(
         eq(usersEvents.uid, uid),
@@ -62,7 +64,46 @@ export const getEventInfo = async (uid: number, eventid: number) => {
         throw new HTTPError(403, "Forbidden");
     }
 
-    
+    let result2 = await db.select({
+        eventDefaultName: events.name,
+        eventCustomName: usersEvents.name,
+        // date
+    }).from(events)
+    .innerJoin(usersEvents, eq(events.eventid, usersEvents.eventid))
+    .where(and(eq(events.eventid, eventid), eq(usersEvents.uid, uid)));
+
+    if(result2.length == 0) {
+        throw new HTTPError(400, "Bad request");
+    }
+
+    let result3 = await db.select({
+        date: votes.date,
+        uid: votes.uid,
+        type: votes.type,
+        profilePicture: users.profilePicture
+    }).from(votes)
+    .innerJoin(users, eq(votes.uid, users.uid))
+    .where(eq(votes.eventid, eventid));
+
+    let result4 = await db.select({
+        uid: usersEvents.uid,
+        picture: users.profilePicture
+    }).from(usersEvents)
+    .innerJoin(users, eq(usersEvents.uid, users.uid))
+    .where(eq(usersEvents.eventid, eventid));
+
+    return {
+        eventid,
+        title: result2[0].eventCustomName || result2[0].eventDefaultName,
+        // date
+        votes: result3.map(row => ({
+            uid: row.uid,
+            picture: row.profilePicture,
+            type: row.type,
+            date: row.date.getTime() / 1000
+        })),
+        users: result4
+    }
 }
 
 export const joinEvent = async (uid: number, eventid: number, inviter?: number) => {
