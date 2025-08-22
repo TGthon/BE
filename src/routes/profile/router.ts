@@ -3,7 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { getProfile, updateProfilePicture } from './service';
+import { getProfile, updateProfileName, updateProfilePicture } from './service';
 import Busboy from 'busboy';
 import sharp from 'sharp';
 import { pipeline } from 'stream/promises';
@@ -21,6 +21,22 @@ router.get('/me',
         try {
             let profile = await getProfile(req.uid!);
             res.status(200).json(profile);
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
+router.put('/me/name',
+    jwtVerifier,
+    body('name').isString().notEmpty(),
+    async (req, res, next) => {
+        try {
+            const name = req.body.name as string;
+
+            await updateProfileName(req.uid!, name);
+            res.status(200).json({ name });
         }
         catch(e) {
             next(e);

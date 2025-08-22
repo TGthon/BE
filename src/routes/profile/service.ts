@@ -19,6 +19,12 @@ export const getProfile = async (uid: number): Promise<Profile> => {
     }
 }
 
+export const updateProfileName = async (uid: number, name: string) => {
+    await db.update(users).set({
+        name
+    }).where(eq(users.uid, uid));
+}
+
 export const updateProfilePicture = async (uid: number, picture: string) => {
     await db.update(users).set({
         profilePicture: picture,
