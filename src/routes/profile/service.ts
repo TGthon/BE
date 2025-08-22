@@ -5,17 +5,20 @@ import { users } from "../../drizzle/schema";
 type Profile = {
     name: string,
     picture?: string,
+    email: string
 }
 
 export const getProfile = async (uid: number): Promise<Profile> => {
     let dbResult = await db.select({
         name: users.name,
-        picture: users.profilePicture
+        picture: users.profilePicture,
+        email: users.email
     }).from(users).where(eq(users.uid, uid));
     
     return {
         name: dbResult[0].name,
-        picture: dbResult[0].picture || undefined
+        picture: dbResult[0].picture || undefined,
+        email: dbResult[0].email
     }
 }
 
