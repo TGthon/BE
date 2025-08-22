@@ -5,6 +5,7 @@ import eventRouter from './event/router';
 import friendsRouter from './friends/router';
 import profileRouter from './profile/router';
 import voteRouter from './vote/router';
+import groupRouter from './group/router';
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.use('/event', eventRouter);
 router.use('/friends', friendsRouter);
 router.use('/profile', profileRouter);
 router.use('/vote', voteRouter);
+router.use('/group', groupRouter);
 
 export default router;
