@@ -10,6 +10,8 @@ dotenv.config();
 import friendsRouter from './routes/friends/router';
 
 const app = express();
+app.use('/api', router);
+app.use('/api/friends', friendsRouter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -21,9 +23,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.use('/api', router);
+
 //app.use('/images', express.static(process.env.IMAGE_FOLDER_PATH!));
-//app.use('/friends', friendsRouter);
+
 if (process.env.IMAGE_FOLDER_PATH) {
   app.use('/images', express.static(process.env.IMAGE_FOLDER_PATH));
 }

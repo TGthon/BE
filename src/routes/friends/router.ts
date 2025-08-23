@@ -16,9 +16,8 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { body } from 'express-validator';
 import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { db } from '../../database';
-import { users } from '../../drizzle/schema';
-import { and, eq, or } from 'drizzle-orm';
-import { userFriends } from '../../drizzle/schema';
+import { users, userFriends } from '../../drizzle/schema';
+import { and, eq, or, inArray } from 'drizzle-orm';
 import jwtVerifier from '../../middlewares/jwtVerifier';
 
 const router = Router();
@@ -84,6 +83,37 @@ router.post(
     }
 );
 
+router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
+  const userUid = Number(req.uid);
+
+  try {
+    // 현재 사용자가 uid1인 친구 관계 조회
+    const relations = await db
+      .select()
+      .from(userFriends)
+      .where(eq(userFriends.uid1, userUid));
+
+    const friendUids = relations.map(rel => rel.uid2);
+
+    if (friendUids.length === 0) {
+      return res.json({ friends: [] });
+    }
+
+    // 친구 UID 목록으로 사용자 정보 조회
+    const friends = await db
+      .select({
+        uid: users.uid,
+        name: users.name,
+        email: users.email,
+      })
+      .from(users)
+      .where(inArray(users.uid, friendUids));
+
+    res.json({ friends });
+  } catch (err) {
+    next(err);
+  }
+});
 
 
 export default router;
