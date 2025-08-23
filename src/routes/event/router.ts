@@ -34,6 +34,7 @@ router.post('/',
     body("groups.*").toInt(),
     body("duration").toInt().notEmpty(),
     body("name").isString().notEmpty(),
+    body("persistent").default(false).isBoolean(),
     validatorErrorChecker,
     async (req, res, next) => {
         try {
@@ -43,6 +44,7 @@ router.post('/',
             let groups = req.body.groups as number[];
             let duration = req.body.duration as number;
             let name = req.body.name as string;
+            let persistent = req.body.persistent as boolean;
 
             let eventid = await createEvent(req.uid!, {
                 start,
@@ -51,6 +53,7 @@ router.post('/',
                 groups,
                 duration,
                 name,
+                persistent
             });
             res.status(200).json({ eventid });
         }

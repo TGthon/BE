@@ -40,7 +40,8 @@ export const createEvent = async (uid: number, data: {
     users: number[],
     groups: number[],
     duration: number,
-    name: string
+    name: string,
+    persistent: boolean
 }) => {
     //await joinEvent(uid, eventid);
     return await db.transaction(async tx => {
@@ -58,7 +59,8 @@ export const createEvent = async (uid: number, data: {
                 peopleCnt: uidList.length,
                 start: new Date(data.start * 1000),
                 end: new Date(data.end * 1000),
-                duration: data.duration
+                duration: data.duration,
+                persistent: data.persistent,
             }).$returningId();
 
             const eventid = result[0].eventid;
