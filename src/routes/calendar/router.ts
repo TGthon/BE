@@ -13,8 +13,8 @@ router.use(express.json());
 // 그래도 조건에 맞는 모든 값을 쿼리해 온다!
 router.get('/',
     jwtVerifier,
-    query("year").isNumeric(),
-    query("month").isNumeric(),
+    query("year").optional().isNumeric(),
+    query("month").optional().isNumeric(),
     validatorErrorChecker,
     async (req, res, next) => {
         try {
@@ -32,11 +32,12 @@ router.get('/',
 router.post('/',
   jwtVerifier,
   body('name').isString().notEmpty(),
-  body('start').isNumeric(),
-  body('end').isNumeric(),
+  body('start').isNumeric().notEmpty(),
+  body('end').isNumeric().notEmpty(),
   body('color').optional().isString(),
   body('note').optional().isString(),
-  body('users').optional().isArray(),
+  body('users').notEmpty().isArray(),
+  body('users.*').toInt(),
   validatorErrorChecker,
   async (req, res, next) => {
     try {
