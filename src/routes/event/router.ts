@@ -3,7 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, param } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { changeEventname, createEvent, exitEvent, getEventInfo, getEventlist, getRecommendedTime, joinEvent } from './service';
+import { changeEventname, confirmEvent, createEvent, exitEvent, getEventInfo, getEventlist, getRecommendedTime, joinEvent } from './service';
 
 const router = Router();
 router.use(express.json());
@@ -129,6 +129,29 @@ router.delete("/:eventid/user/me",
             let eventid = parseInt(req.params.eventid);
 
             await exitEvent(req.uid!, eventid);
+            res.status(200).json({ ok: true });
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
+router.post("/:eventid/confirm",
+    jwtVerifier,
+    param("eventid").isNumeric().notEmpty(),
+    body("start").toInt().notEmpty(),
+    body("name").notEmpty().isString(),
+    body("color").isString().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        try {
+            let uid = req.uid!;
+            let eventid = parseInt(req.params.eventid);
+            let start = req.body.start as number;
+            let name = req.body.name as string;
+            let color = req.body.color as string;
+            await confirmEvent(uid, eventid, start, name, color);
             res.status(200).json({ ok: true });
         }
         catch(e) {
