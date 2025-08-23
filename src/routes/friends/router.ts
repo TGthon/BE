@@ -115,5 +115,33 @@ router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  const friendUid = req.params.id;
+  const userEmail = req.uid;
+
+  try {
+    // 현재 로그인한 유저 정보 가져오기
+    const useremail = String(userEmail);
+    const user = await db.select().from(users).where(eq(users.email, useremail));
+    if (!user.length) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    // 친구 관계 삭제
+    const targetUid = Number(friendUid);
+    await db
+      .delete(userFriends)
+      .where(
+        or(
+          and(eq(userFriends.uid1, user[0].uid), eq(userFriends.uid2, targetUid)),
+          and(eq(userFriends.uid1, targetUid), eq(userFriends.uid2, user[0].uid))
+        )
+      );
+
+    return res.status(200).json({ message: '친구가 성공적으로 삭제되었습니다.' });
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;
