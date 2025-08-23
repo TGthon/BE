@@ -154,4 +154,20 @@ router.get("/:eventid/recommended",
     }
 )
 
+router.post("/:eventid/confirm",
+    jwtVerifier,
+    param("eventid").isNumeric().notEmpty(),
+    body("start").toInt().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        try {
+            let eventid = parseInt(req.params.eventid);
+            
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
 export default router;
