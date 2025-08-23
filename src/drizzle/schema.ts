@@ -1,4 +1,4 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, foreignKey, primaryKey, bigint, varchar, int, timestamp, char, text } from "drizzle-orm/mysql-core"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, foreignKey, primaryKey, bigint, varchar, int, timestamp, char, text, boolean } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const events = mysqlTable("events", {
@@ -8,7 +8,8 @@ export const events = mysqlTable("events", {
 	peopleCnt: int("people_cnt").default(0).notNull(),
 	start: timestamp().notNull(),
 	end: timestamp().notNull(),
-	duration: int().notNull()
+	duration: int().notNull(),
+	persistent: boolean().default(false).notNull()
 },
 (table) => [
 	index("gid_idx").on(table.gid),
