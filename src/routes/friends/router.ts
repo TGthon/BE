@@ -26,11 +26,14 @@ router.use(jwtVerifier);
 
 router.post(
     '/add',
+    jwtVerifier,
     [
         body('friendEmail').isEmail().withMessage('친구 이메일 형식이 올바르지 않습니다'),
         validatorErrorChecker,
     ],
     async (req: Request, res: Response, next: NextFunction) => {
+        console.log('req.uid:', req.uid);
+
         const { friendEmail } = req.body;
         const userEmail = req.uid;
 
