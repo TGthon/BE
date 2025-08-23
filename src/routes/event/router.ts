@@ -3,7 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, param } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { changeEventname, createEvent, exitEvent, getEventInfo, getEventlist, getRecommendedTime, joinEvent } from './service';
+import { changeEventname, confirmEvent, createEvent, exitEvent, getEventInfo, getEventlist, getRecommendedTime, joinEvent } from './service';
 
 const router = Router();
 router.use(express.json());
@@ -147,7 +147,8 @@ router.post("/:eventid/confirm",
     async (req, res, next) => {
         try {
             let eventid = parseInt(req.params.eventid);
-            
+            await confirmEvent(eventid);
+            res.status(200).json({ ok: true });
         }
         catch(e) {
             next(e);

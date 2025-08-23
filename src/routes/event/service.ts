@@ -214,6 +214,14 @@ export const exitEvent = async (uid: number, eventid: number) => {
     });
 }
 
+// 일단 일회성 이벤트 컨펌 먼저 만드고
+// 나중에 다회성을 만들겠습니다.
+export const confirmEvent = async (eventid: number) => {
+    await db.transaction(async tx => {
+        
+    });
+}
+
 type RecommendResult = {
     start: number,
     end: number,
