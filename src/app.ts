@@ -10,18 +10,18 @@ dotenv.config();
 import friendsRouter from './routes/friends/router';
 
 const app = express();
-app.use('/api', router);
-app.use('/api/friends', friendsRouter);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 // for development
 const corsOptions = {
     origin: ['http://localhost:8081', 'http://localhost:5173', 'http://localhost:3000', 'http://localhost:19006'],
     credentials: true
 }
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
+
+app.use('/api', router);
+app.use('/api/friends', friendsRouter);
 
 
 //app.use('/images', express.static(process.env.IMAGE_FOLDER_PATH!));
