@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { groups, events, schedules, users, userFriends, usersEvents, usersGroups, votes } from "./schema";
+import { groups, events, schedules, users, userFriends, usersEvents, usersGroups, usersSchedules, votes } from "./schema";
 
 export const eventsRelations = relations(events, ({one, many}) => ({
 	group: one(groups, {
@@ -16,28 +16,12 @@ export const groupsRelations = relations(groups, ({many}) => ({
 	usersGroups: many(usersGroups),
 }));
 
-export const schedulesRelations = relations(schedules, ({one}) => ({
+export const schedulesRelations = relations(schedules, ({one, many}) => ({
 	group: one(groups, {
 		fields: [schedules.gid],
 		references: [groups.gid]
 	}),
-	user: one(users, {
-		fields: [schedules.uid],
-		references: [users.uid]
-	}),
-}));
-
-export const usersRelations = relations(users, ({many}) => ({
-	schedules: many(schedules),
-	userFriends_uid1: many(userFriends, {
-		relationName: "userFriends_uid1_users_uid"
-	}),
-	userFriends_uid2: many(userFriends, {
-		relationName: "userFriends_uid2_users_uid"
-	}),
-	usersEvents: many(usersEvents),
-	usersGroups: many(usersGroups),
-	votes: many(votes),
+	usersSchedules: many(usersSchedules),
 }));
 
 export const userFriendsRelations = relations(userFriends, ({one}) => ({
@@ -51,6 +35,19 @@ export const userFriendsRelations = relations(userFriends, ({one}) => ({
 		references: [users.uid],
 		relationName: "userFriends_uid2_users_uid"
 	}),
+}));
+
+export const usersRelations = relations(users, ({many}) => ({
+	userFriends_uid1: many(userFriends, {
+		relationName: "userFriends_uid1_users_uid"
+	}),
+	userFriends_uid2: many(userFriends, {
+		relationName: "userFriends_uid2_users_uid"
+	}),
+	usersEvents: many(usersEvents),
+	usersGroups: many(usersGroups),
+	usersSchedules: many(usersSchedules),
+	votes: many(votes),
 }));
 
 export const usersEventsRelations = relations(usersEvents, ({one}) => ({
@@ -71,6 +68,17 @@ export const usersGroupsRelations = relations(usersGroups, ({one}) => ({
 	}),
 	user: one(users, {
 		fields: [usersGroups.uid],
+		references: [users.uid]
+	}),
+}));
+
+export const usersSchedulesRelations = relations(usersSchedules, ({one}) => ({
+	schedule: one(schedules, {
+		fields: [usersSchedules.scheduleid],
+		references: [schedules.scheduleid]
+	}),
+	user: one(users, {
+		fields: [usersSchedules.uid],
 		references: [users.uid]
 	}),
 }));
