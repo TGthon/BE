@@ -33,7 +33,7 @@ export const getCalendar = async (uid: number, year: string | undefined, month: 
         scheduleid: row.scheduleid,
         start: row.start.getTime() / 1000,
         end: row.end.getTime() / 1000,
-        color: row.color,
+        color: `#${row.color}`,
         name: row.name,
         users: row.users
     }))
