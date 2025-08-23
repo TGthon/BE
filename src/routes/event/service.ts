@@ -55,7 +55,10 @@ export const createEvent = async (uid: number, data: {
 
             const result = await tx.insert(events).values({
                 name: data.name,
-                peopleCnt: uidList.length
+                peopleCnt: uidList.length,
+                start: new Date(data.start * 1000),
+                end: new Date(data.end * 1000),
+                duration: data.duration
             }).$returningId();
 
             const eventid = result[0].eventid;

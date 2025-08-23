@@ -6,6 +6,9 @@ export const events = mysqlTable("events", {
 	gid: bigint({ mode: "number" }).references(() => groups.gid),
 	name: varchar({ length: 50 }).notNull(),
 	peopleCnt: int("people_cnt").default(0).notNull(),
+	start: timestamp().notNull(),
+	end: timestamp().notNull(),
+	duration: int().notNull()
 },
 (table) => [
 	index("gid_idx").on(table.gid),
