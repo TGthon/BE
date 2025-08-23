@@ -211,8 +211,19 @@ export const exitEvent = async (uid: number, eventid: number) => {
 
 // 추천하는 시간을 반환한다!
 // 반환값은 Unixtime이고, ~~년 ~~월 ~~일 ~~시 까지만 쓰고 뒤에 분과 초는 0으로 채워서 준다!
+// 날짜 우선, 이벤트 소요시간 바탕으로 진행할 시간 고르기
 export const getRecommendedTime = async (uid: number, eventid: number): Promise<[number, number]> => {
+    let eventInfo = await db.select().from(events).where(eq(events.eventid, eventid));
     // todo
+    let voteData = await db.select({
+        uid: votes.uid,
+        date: votes.date,
+        type: votes.type
+    }).from(votes).where(eq(votes.eventid, eventid));
+
+    let map_ = new Map<number, number>();
+
+
     const now = Math.floor(new Date().getTime() / 1000);
     return [now, now + 3600];
 }
