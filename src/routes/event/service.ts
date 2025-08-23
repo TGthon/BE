@@ -317,7 +317,7 @@ export const getRecommendedTime = async (uid: number, eventid: number): Promise<
         return 0;
     });
 
-    console.log(result);
+    // console.log(result);
 
     if(result.length > 0)
         return [result[0].start, result[0].end];
