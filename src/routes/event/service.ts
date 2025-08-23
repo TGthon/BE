@@ -212,10 +212,116 @@ export const exitEvent = async (uid: number, eventid: number) => {
     });
 }
 
+type RecommendResult = {
+    start: number,
+    end: number,
+    impossibleCount: number,
+    preferredCount: number,
+    nonPreferredCount: number,
+}
+
 // 추천하는 시간을 반환한다!
 // 반환값은 Unixtime이고, ~~년 ~~월 ~~일 ~~시 까지만 쓰고 뒤에 분과 초는 0으로 채워서 준다!
+// 날짜 우선, 이벤트 소요시간 바탕으로 진행할 시간 고르기
 export const getRecommendedTime = async (uid: number, eventid: number): Promise<[number, number]> => {
-    // todo
-    const now = Math.floor(new Date().getTime() / 1000);
-    return [now, now + 3600];
+    let eventInfo = await db.select().from(events).where(eq(events.eventid, eventid));
+    if (eventInfo.length == 0)
+        throw new HTTPError(400, "Bad request");
+    
+    let voteData = (await db.select({
+        uid: votes.uid,
+        date: votes.date,
+        type: votes.type
+    }).from(votes).where(eq(votes.eventid, eventid))
+    .orderBy(votes.date))
+    .map(v => ({
+        uid: v.uid,
+        date: v.date.getTime() / 1000,
+        type: v.type
+    }));
+
+    let map_preferred = new Map<number, number>();
+    let map_nonpreferred = new Map<number, number>();
+    let map_impossible = new Map<number, number>();
+    const mapAdd = (m: Map<number, number>, k: number, v: number) => {
+        let now = m.get(k) ?? 0;
+        m.set(k, now + v);
+        if (now + v == 0)
+            m.delete(k);
+    }
+    
+    // Date 다루면 헷갈리니 전부 다 unixtime 기준(초단위) 로 구현
+    let start = eventInfo[0].start.getTime() / 1000;
+    let end = eventInfo[0].end.getTime() / 1000;
+    let duration = eventInfo[0].duration;
+    let unit = 1800; // 30분
+
+    let now_s = start, now_e = start + duration;
+    let s_idx = 0;
+    let e_idx = 0;
+
+    let result: RecommendResult[] = [];
+
+    // 같은 유저가 구간에서 Preferred이면서 Impossible인 경우 같을 때에
+    // 뭔가 조치를 해야 할 것 같긴 한데
+    // 날짜추천의 목적을 생각했을때 별로 안 중요한 것 같기도 하다.
+    while (now_e <= end) {
+        while (e_idx < voteData.length && voteData[e_idx].date < now_e) {
+            switch (voteData[e_idx].type) {
+                case 'P': 
+                    mapAdd(map_preferred, voteData[e_idx].uid, 1);
+                    break;
+                case 'N':
+                    mapAdd(map_nonpreferred, voteData[e_idx].uid, 1);
+                    break;
+                case 'I':
+                    mapAdd(map_impossible, voteData[e_idx].uid, 1);
+                    break;
+            }
+            e_idx++;
+        }
+        while (s_idx < voteData.length && voteData[s_idx].date < now_s) {
+            switch (voteData[s_idx].type) {
+                case 'P': 
+                    mapAdd(map_preferred, voteData[s_idx].uid, -1);
+                    break;
+                case 'N':
+                    mapAdd(map_nonpreferred, voteData[s_idx].uid, -1);
+                    break;
+                case 'I':
+                    mapAdd(map_impossible, voteData[s_idx].uid, -1);
+                    break;
+            }
+            s_idx++;
+        }
+
+        result.push({
+            start: now_s,
+            end: now_e,
+            impossibleCount: map_impossible.size,
+            preferredCount: map_preferred.size,
+            nonPreferredCount: map_nonpreferred.size
+        });
+
+        now_s += unit;
+        now_e += unit;
+    }
+
+    result.sort((a, b): number => {
+        if (a.impossibleCount != b.impossibleCount)
+            return a.impossibleCount < b.impossibleCount ? -1 : 1;
+        if (a.preferredCount != b.preferredCount)
+            return a.preferredCount > b.preferredCount ? -1 : 1;
+        if (a.nonPreferredCount != b.nonPreferredCount)
+            return a.nonPreferredCount < b.nonPreferredCount ? -1 : 1;
+        return 0;
+    });
+
+    console.log(result);
+
+    if(result.length > 0)
+        return [result[0].start, result[0].end];
+
+    const now = Math.floor(new Date().getTime() / 1000) / unit * unit;
+    return [now, now + duration];
 }
