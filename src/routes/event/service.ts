@@ -322,9 +322,7 @@ export const getRecommendedTime = async (uid: number, eventid: number): Promise<
 
     let result: RecommendResult[] = [];
 
-    // 같은 유저가 구간에서 Preferred이면서 Impossible인 경우 같을 때에
-    // 뭔가 조치를 해야 할 것 같긴 한데
-    // 날짜추천의 목적을 생각했을때 별로 안 중요한 것 같기도 하다.
+    // 스위핑 알고리즘을 사용해 최적의 시간을 구한다.
     while (now_e <= end) {
         while (e_idx < voteData.length && voteData[e_idx].date < now_e) {
             switch (voteData[e_idx].type) {
