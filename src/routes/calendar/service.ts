@@ -1,5 +1,5 @@
 import { db } from '../../database';
-import { calendar } from '../../drizzle/schema';
+import { calendar, schedules } from '../../drizzle/schema';
 import mysql from 'mysql2/promise';
 
 type Calendar = {
@@ -48,16 +48,28 @@ export async function createCalendar({
     note?: string;
     users?: string[];
 }) {
-    let result = await db.insert(calendar).values({
-        userId: uid,
-        name: name,
-        start: start,
-        end: end,
-        color: color ?? '#3B82F6',
-        note: note,
-        users: JSON.stringify(users ?? [uid])
-    }).$returningId();
+    // DB에는 #떼고 저장
+    if (color && color[0] == '#')
+        color = color.substring(1);
 
-    const insertId = result[0].id;
-    return { id: insertId, name, start, end, color, note, users };
+    // let result = await db.insert(calendar).values({
+    //     userId: uid,
+    //     name: name,
+    //     start: start,
+    //     end: end,
+    //     color: color ?? '#3B82F6',
+    //     note: note,
+    //     users: JSON.stringify(users ?? [uid])
+    // }).$returningId();
+
+    // const insertId = result[0].id;
+    // return { id: insertId, name, start, end, color, note, users };
+    await db.insert(schedules).values({
+        // gid,
+        name,
+        start: new Date(start * 1000),
+        end: new Date(end * 1000),
+        color: color ?? '3B82F6',
+        note: note ?? ''
+    });
 }

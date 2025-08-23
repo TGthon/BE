@@ -26,19 +26,25 @@ export const groups = mysqlTable("groups", {
 ]);
 
 export const schedules = mysqlTable("schedules", {
-	scheduleid: bigint({ mode: "number" }).notNull(),
-	uid: bigint({ mode: "number" }).notNull().references(() => users.uid),
+	scheduleid: bigint({ mode: "number" }).autoincrement().notNull(),
 	gid: bigint({ mode: "number" }).references(() => groups.gid),
 	name: varchar({ length: 50 }).notNull(),
 	start: timestamp().notNull(),
 	end: timestamp().notNull(),
+	color: char({ length: 6 }).default("3B82F6").notNull(),
+	note: text().notNull(),
 },
 (table) => [
 	index("name").on(table.name),
 	index("schedules_gid_idx").on(table.gid),
-	index("schedules_uid_idx").on(table.uid),
 	primaryKey({ columns: [table.scheduleid], name: "schedules_scheduleid"}),
 ]);
+
+export const usersSchedules = mysqlTable("users_schedules", {
+	uid: bigint({ mode: "number" }).notNull(),
+	scheduleid: bigint({ mode: "number" }).notNull(),
+	name: varchar({ length: 50 })
+})
 
 export const sessions = mysqlTable("sessions", {
 	uid: bigint({ mode: "number" }).notNull(),
