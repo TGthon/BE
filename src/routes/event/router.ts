@@ -141,13 +141,17 @@ router.post("/:eventid/confirm",
     jwtVerifier,
     param("eventid").isNumeric().notEmpty(),
     body("start").toInt().notEmpty(),
-    body("name").optional().isString(),
+    body("name").notEmpty().isString(),
     body("color").isString().notEmpty(),
     validatorErrorChecker,
     async (req, res, next) => {
         try {
+            let uid = req.uid!;
             let eventid = parseInt(req.params.eventid);
-            await confirmEvent(eventid);
+            let start = req.body.start as number;
+            let name = req.body.name as string;
+            let color = req.body.color as string;
+            await confirmEvent(uid, eventid, start, name, color);
             res.status(200).json({ ok: true });
         }
         catch(e) {
