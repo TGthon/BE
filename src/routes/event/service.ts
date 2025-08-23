@@ -218,7 +218,7 @@ export const exitEvent = async (uid: number, eventid: number) => {
 // 나중에 다회성을 만들겠습니다.
 export const confirmEvent = async (eventid: number) => {
     await db.transaction(async tx => {
-        
+
     });
 }
 
@@ -237,6 +237,13 @@ export const getRecommendedTime = async (uid: number, eventid: number): Promise<
     let eventInfo = await db.select().from(events).where(eq(events.eventid, eventid));
     if (eventInfo.length == 0)
         throw new HTTPError(400, "Bad request");
+
+    let userData = await db.select().from(usersEvents).where(and(
+        eq(usersEvents.uid, uid),
+        eq(usersEvents.eventid, eventid)
+    ));
+    if (userData.length == 0)
+        throw new HTTPError(403, "Forbidden");
     
     let voteData = (await db.select({
         uid: votes.uid,
