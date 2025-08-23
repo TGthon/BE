@@ -48,6 +48,7 @@ export const schedules = mysqlTable("schedules", {
 	end: timestamp().notNull(),
 	color: char({ length: 6 }).default('3B82F6').notNull(),
 	note: text().notNull(),
+	usersString: varchar("users_string", { length: 50 }).notNull().default(''),
 },
 (table) => [
 	index("name").on(table.name),

@@ -13,8 +13,8 @@ router.use(express.json());
 // 그래도 조건에 맞는 모든 값을 쿼리해 온다!
 router.get('/',
     jwtVerifier,
-    query("year").isNumeric(),
-    query("month").isNumeric(),
+    query("year").optional().isNumeric(),
+    query("month").optional().isNumeric(),
     validatorErrorChecker,
     async (req, res, next) => {
         try {
