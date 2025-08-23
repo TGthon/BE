@@ -32,13 +32,13 @@ router.post(
         validatorErrorChecker,
     ],
     async (req: Request, res: Response, next: NextFunction) => {
-        console.log('req.uid:', req.uid);
+    console.log('req.uid:', req.uid);
 
         const { friendEmail } = req.body;
-        const userEmail = req.uid;
+        const userUid = Number(req.uid);
 
         try {
-            const user = await db.select().from(users).where(eq(users.email, userEmail as unknown as string));
+            const user = await db.select().from(users).where(eq(users.uid, userUid));
             const friend = await db.select().from(users).where(eq(users.email, friendEmail));
 
             if (!user.length || !friend.length) {

@@ -17,6 +17,6 @@ export default function jwtVerifier(req: Request, res: Response, next: NextFunct
     }
 
     const uid = verifyResult;
-    req.uid = uid;
+    req.uid = Number(uid);
     next();
 }
