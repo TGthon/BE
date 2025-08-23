@@ -142,8 +142,8 @@ router.get("/:eventid/recommended",
         try {
             let eventid = parseInt(req.params.eventid);
 
-            let time = await getRecommendedTime(req.uid!, eventid);
-            res.status(200).json({ time });
+            let [start, end] = await getRecommendedTime(req.uid!, eventid);
+            res.status(200).json({ start, end });
         }
         catch(e) {
             next(e);

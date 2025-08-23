@@ -211,7 +211,8 @@ export const exitEvent = async (uid: number, eventid: number) => {
 
 // 추천하는 시간을 반환한다!
 // 반환값은 Unixtime이고, ~~년 ~~월 ~~일 ~~시 까지만 쓰고 뒤에 분과 초는 0으로 채워서 준다!
-export const getRecommendedTime = async (uid: number, eventid: number): Promise<number> => {
+export const getRecommendedTime = async (uid: number, eventid: number): Promise<[number, number]> => {
     // todo
-    return Math.floor(new Date().getTime() / 1000);
+    const now = Math.floor(new Date().getTime() / 1000);
+    return [now, now + 3600];
 }
