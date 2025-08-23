@@ -30,7 +30,7 @@ router.post(
         validatorErrorChecker,
     ],
     async (req: Request, res: Response, next: NextFunction) => {
-    console.log('req.uid:', req.uid);
+        console.log('req.uid:', req.uid);
 
         const { friendEmail } = req.body;
         const userUid = Number(req.uid);
@@ -84,64 +84,72 @@ router.post(
 );
 
 router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
-  const userUid = Number(req.uid);
+    const userUid = Number(req.uid);
 
-  try {
-    // 현재 사용자가 uid1인 친구 관계 조회
-    const relations = await db
-      .select()
-      .from(userFriends)
-      .where(eq(userFriends.uid1, userUid));
+    try {
+        // 현재 사용자가 uid1인 친구 관계 조회
+        const relations = await db
+            .select()
+            .from(userFriends)
+            .where(eq(userFriends.uid1, userUid));
 
-    const friendUids = relations.map(rel => rel.uid2);
+        const friendUids = relations.map(rel => rel.uid2);
 
-    if (friendUids.length === 0) {
-      return res.json({ friends: [] });
+        if (friendUids.length === 0) {
+            return res.json({ friends: [] });
+        }
+
+        // 친구 UID 목록으로 사용자 정보 조회
+        const friends = await db
+            .select({
+                uid: users.uid,
+                name: users.name,
+                email: users.email,
+            })
+            .from(users)
+            .where(inArray(users.uid, friendUids));
+
+        res.json({ friends });
+    } catch (err) {
+        next(err);
     }
-
-    // 친구 UID 목록으로 사용자 정보 조회
-    const friends = await db
-      .select({
-        uid: users.uid,
-        name: users.name,
-        email: users.email,
-      })
-      .from(users)
-      .where(inArray(users.uid, friendUids));
-
-    res.json({ friends });
-  } catch (err) {
-    next(err);
-  }
 });
 
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  const friendUid = req.params.id;
-  const userEmail = req.uid;
+    const friendUid = req.params.id;
+    const userEmail = req.uid;
 
-  try {
-    // 현재 로그인한 유저 정보 가져오기
-    const useremail = String(userEmail);
-    const user = await db.select().from(users).where(eq(users.email, useremail));
-    if (!user.length) {
-      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    try {
+        // 현재 로그인한 유저 정보 가져오기
+        const useremail = String(userEmail);
+        const user = await db.select().from(users).where(eq(users.email, useremail));
+        if (!user.length) {
+            return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+        }
+
+        // 친구 관계 삭제
+        const targetUid = Number(friendUid);
+        const myUid = Number(user[0].uid);
+        await db
+            .delete(userFriends)
+            .where(
+                or(
+                    and(
+                        eq(userFriends.uid1, myUid),
+                        eq(userFriends.uid2, targetUid)
+                    ),
+                    and(
+                        eq(userFriends.uid1, targetUid),
+                        eq(userFriends.uid2, myUid)
+                    )
+                )
+
+            );
+
+        return res.status(200).json({ message: '친구가 성공적으로 삭제되었습니다.' });
+    } catch (err) {
+        next(err);
     }
-
-    // 친구 관계 삭제
-    const targetUid = Number(friendUid);
-    await db
-      .delete(userFriends)
-      .where(
-        or(
-          and(eq(userFriends.uid1, user[0].uid), eq(userFriends.uid2, targetUid)),
-          and(eq(userFriends.uid1, targetUid), eq(userFriends.uid2, user[0].uid))
-        )
-      );
-
-    return res.status(200).json({ message: '친구가 성공적으로 삭제되었습니다.' });
-  } catch (err) {
-    next(err);
-  }
 });
 
 export default router;
