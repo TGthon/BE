@@ -3,7 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, query } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { getCalendar } from './service';
+import { createCalendar, getCalendar } from './service';
 
 const router = Router();
 router.use(express.urlencoded({ extended: false }));
@@ -28,5 +28,36 @@ router.get('/',
         }
     }
 )
+
+router.post('/',
+  jwtVerifier,
+  body('name').isString().notEmpty(),
+  body('start').isNumeric(),
+  body('end').isNumeric(),
+  body('color').optional().isString(),
+  body('note').optional().isString(),
+  body('users').optional().isArray(),
+  validatorErrorChecker,
+  async (req, res, next) => {
+    try {
+      const uid = req.uid!;
+      const { name, start, end, color, note, users } = req.body;
+
+      const newEvent = await createCalendar({
+        uid,
+        name,
+        start,
+        end,
+        color,
+        note,
+        users,
+      });
+
+      res.status(201).json({ success: true, event: newEvent });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
 
 export default router;

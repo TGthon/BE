@@ -1,4 +1,4 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, foreignKey, primaryKey, bigint, varchar, int, timestamp, char } from "drizzle-orm/mysql-core"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, foreignKey, primaryKey, bigint, varchar, int, timestamp, char, text } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const events = mysqlTable("events", {
@@ -6,6 +6,9 @@ export const events = mysqlTable("events", {
 	gid: bigint({ mode: "number" }).references(() => groups.gid),
 	name: varchar({ length: 50 }).notNull(),
 	peopleCnt: int("people_cnt").default(0).notNull(),
+	start: timestamp().notNull(),
+	end: timestamp().notNull(),
+	duration: int().notNull()
 },
 (table) => [
 	index("gid_idx").on(table.gid),
@@ -97,3 +100,14 @@ export const userFriends = mysqlTable("user_friends", {
 (table) => [
 	primaryKey({ columns: [table.uid1, table.uid2], name: "user_friends_uid1_uid2"}),
 ]);
+
+export const calendar = mysqlTable('calendar', {
+  id: int('id').primaryKey().autoincrement(),
+  userId: int('user_id'),
+  name: varchar('name', { length: 255 }),
+  start: int('start'),
+  end: int('end'),
+  color: varchar('color', { length: 7 }),
+  note: text('note'),
+  users: text('users'),
+});

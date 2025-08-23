@@ -1,3 +1,6 @@
+import { db } from '../../database';
+import { calendar } from '../../drizzle/schema';
+import mysql from 'mysql2/promise';
 
 type Calendar = {
     start: number,
@@ -26,4 +29,32 @@ export const getCalendar = async (uid: number, year: string | undefined, month: 
             color: "#8B5CF6"
         },
     ]
+}
+
+export async function createCalendar({
+  uid,
+  name,
+  start,
+  end,
+  color,
+  note,
+  users,
+}: {
+  uid: number;
+  name: string;
+  start: number;
+  end: number;
+  color?: string;
+  note?: string;
+  users?: string[];
+}) {
+    const connection = await mysql.createConnection(process.env.DATABASE_URL!);
+
+  const [result] = await connection.execute(
+  `INSERT INTO calendar (user_id, name, start, end, color, note, users) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  [uid, name, start, end, color ?? '#3B82F6', note ?? '', JSON.stringify(users ?? [uid])]
+);
+
+  const insertId = (result as mysql.ResultSetHeader).insertId;
+  return { id: insertId, name, start, end, color, note, users };
 }
