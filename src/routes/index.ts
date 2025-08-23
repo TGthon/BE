@@ -17,5 +17,6 @@ router.use('/friends', friendsRouter);
 router.use('/profile', profileRouter);
 router.use('/vote', voteRouter);
 router.use('/group', groupRouter);
+router.use('/friends', friendsRouter);
 
 export default router;

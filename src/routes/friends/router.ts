@@ -26,7 +26,6 @@ router.use(jwtVerifier);
 
 router.post(
     '/add',
-    jwtVerifier,
     [
         body('friendEmail').isEmail().withMessage('친구 이메일 형식이 올바르지 않습니다'),
         validatorErrorChecker,
