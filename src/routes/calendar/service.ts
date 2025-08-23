@@ -32,29 +32,32 @@ export const getCalendar = async (uid: number, year: string | undefined, month: 
 }
 
 export async function createCalendar({
-  uid,
-  name,
-  start,
-  end,
-  color,
-  note,
-  users,
+    uid,
+    name,
+    start,
+    end,
+    color,
+    note,
+    users,
 }: {
-  uid: number;
-  name: string;
-  start: number;
-  end: number;
-  color?: string;
-  note?: string;
-  users?: string[];
+    uid: number;
+    name: string;
+    start: number;
+    end: number;
+    color?: string;
+    note?: string;
+    users?: string[];
 }) {
-    const connection = await mysql.createConnection(process.env.DATABASE_URL!);
+    let result = await db.insert(calendar).values({
+        userId: uid,
+        name: name,
+        start: start,
+        end: end,
+        color: color ?? '#3B82F6',
+        note: note,
+        users: JSON.stringify(users ?? [uid])
+    }).$returningId();
 
-  const [result] = await connection.execute(
-  `INSERT INTO calendar (user_id, name, start, end, color, note, users) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  [uid, name, start, end, color ?? '#3B82F6', note ?? '', JSON.stringify(users ?? [uid])]
-);
-
-  const insertId = (result as mysql.ResultSetHeader).insertId;
-  return { id: insertId, name, start, end, color, note, users };
+    const insertId = result[0].id;
+    return { id: insertId, name, start, end, color, note, users };
 }
