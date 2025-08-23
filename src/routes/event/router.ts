@@ -137,6 +137,24 @@ router.delete("/:eventid/user/me",
     }
 )
 
+router.post("/:eventid/confirm",
+    jwtVerifier,
+    param("eventid").isNumeric().notEmpty(),
+    body("start").toInt().notEmpty(),
+    body("name").optional().isString(),
+    body("color").isString().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        try {
+            let eventid = parseInt(req.params.eventid);
+            
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
 router.get("/:eventid/recommended",
     jwtVerifier,
     param("eventid").isNumeric().notEmpty(),
@@ -147,22 +165,6 @@ router.get("/:eventid/recommended",
 
             let [start, end] = await getRecommendedTime(req.uid!, eventid);
             res.status(200).json({ start, end });
-        }
-        catch(e) {
-            next(e);
-        }
-    }
-)
-
-router.post("/:eventid/confirm",
-    jwtVerifier,
-    param("eventid").isNumeric().notEmpty(),
-    body("start").toInt().notEmpty(),
-    validatorErrorChecker,
-    async (req, res, next) => {
-        try {
-            let eventid = parseInt(req.params.eventid);
-            
         }
         catch(e) {
             next(e);
