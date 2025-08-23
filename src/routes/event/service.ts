@@ -1,6 +1,6 @@
 import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../database"
-import { events, users, usersEvents, usersGroups, votes } from "../../drizzle/schema";
+import { events, schedules, users, usersEvents, usersGroups, usersSchedules, votes } from "../../drizzle/schema";
 import HTTPError from "../../utils/HTTPError";
 
 type EventItem = {
@@ -214,6 +214,57 @@ export const exitEvent = async (uid: number, eventid: number) => {
     });
 }
 
+// 일단 일회성 이벤트 컨펌 먼저 만드고
+// 나중에 다회성을 만들겠습니다.
+export const confirmEvent = async (uid: number, eventid: number, start: number, name: string, color: string) => {
+    if (color[0] == '#')
+        color = color.substring(1);
+
+    await db.transaction(async tx => {
+        let result1 = await tx.select({name: users.name}).from(users).where(eq(users.uid, uid));
+        const myName = result1[0].name;
+
+        let userData = await tx.select().from(usersEvents).where(and(
+            eq(usersEvents.uid, uid),
+            eq(usersEvents.eventid, eventid)
+        ));
+        if (userData.length == 0)
+            throw new HTTPError(403, "Forbidden");
+
+        let eventInfo = await tx.select({
+            name: events.name,
+            persistent: events.persistent,
+            duration: events.duration
+        }).from(events).where(eq(events.eventid, eventid));
+
+        let userList = (await tx.select({
+            uid: usersEvents.uid
+        }).from(usersEvents).where(eq(usersEvents.eventid, eventid)))
+        .map(row => row.uid);
+
+        if (eventInfo.length == 0)
+            throw new HTTPError(400, "Bad request");
+
+        let insertResult = await tx.insert(schedules).values({
+            name: name,
+            color: color,
+            start: new Date(start * 1000),
+            end: new Date((start + eventInfo[0].duration) * 1000),
+            note: '',
+            usersString: `${myName} 외 ${userList.length-1}명`
+        }).$returningId();
+
+        // 아 헷갈려
+        await tx.insert(usersSchedules).values(userList.map(uid => ({
+            uid,
+            scheduleid: insertResult[0].scheduleid,
+            name: ''
+        })));
+        
+        // todo: 이벤트 삭제 (또는 삭제로 마킹)
+    });
+}
+
 type RecommendResult = {
     start: number,
     end: number,
@@ -229,6 +280,13 @@ export const getRecommendedTime = async (uid: number, eventid: number): Promise<
     let eventInfo = await db.select().from(events).where(eq(events.eventid, eventid));
     if (eventInfo.length == 0)
         throw new HTTPError(400, "Bad request");
+
+    let userData = await db.select().from(usersEvents).where(and(
+        eq(usersEvents.uid, uid),
+        eq(usersEvents.eventid, eventid)
+    ));
+    if (userData.length == 0)
+        throw new HTTPError(403, "Forbidden");
     
     let voteData = (await db.select({
         uid: votes.uid,
@@ -264,9 +322,7 @@ export const getRecommendedTime = async (uid: number, eventid: number): Promise<
 
     let result: RecommendResult[] = [];
 
-    // 같은 유저가 구간에서 Preferred이면서 Impossible인 경우 같을 때에
-    // 뭔가 조치를 해야 할 것 같긴 한데
-    // 날짜추천의 목적을 생각했을때 별로 안 중요한 것 같기도 하다.
+    // 스위핑 알고리즘을 사용해 최적의 시간을 구한다.
     while (now_e <= end) {
         while (e_idx < voteData.length && voteData[e_idx].date < now_e) {
             switch (voteData[e_idx].type) {
