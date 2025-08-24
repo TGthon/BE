@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import friendsRouter from './routes/friends/router';
-import groupRouter from './routes/friends/router';
+import groupRouter from './routes/group/router';
 
 const app = express();
 
@@ -22,8 +22,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
 
 app.use('/api', router);
-app.use('/api/friends', friendsRouter);
-app.use("/api/friends", groupRouter);
+//app.use('/api/friends', friendsRouter);
+//app.use('/api/group', groupRouter);
 
 
 //app.use('/images', express.static(process.env.IMAGE_FOLDER_PATH!));

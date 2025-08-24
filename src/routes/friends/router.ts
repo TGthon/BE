@@ -152,34 +152,4 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
     }
 });
 
-router.post('/groupadd', async (req, res) => {
-    const { name, memberIds } = req.body;
-
-    if (!name || !Array.isArray(memberIds)) {
-        return res.status(400).json({ error: "그룹명과 멤버 목록이 필요합니다." });
-    }
-
-    try {
-        // 1. 그룹 생성
-        const [newGroup] = await db.insert(groups).values({
-            groupName: name
-        });
-        const gid = newGroup.insertId;
-
-        // 2. 멤버 연결
-        await db.insert(usersGroups).values(
-            memberIds.map(uid => ({
-                uid,
-                gid
-            }))
-        );
-
-
-        res.json({ success: true, groupId: gid });
-    } catch (err) {
-        console.error("그룹 저장 실패:", err);
-        res.status(500).json({ error: "서버 오류" });
-    }
-});
-
 export default router;
