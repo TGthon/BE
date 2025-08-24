@@ -25,6 +25,7 @@ export const events = mysqlTable("events", {
 	end: timestamp().notNull(),
 	duration: int().notNull(),
 	persistent: boolean().default(false).notNull(),
+	finished: boolean().default(false).notNull(),
 },
 (table) => [
 	index("gid_idx").on(table.gid),
