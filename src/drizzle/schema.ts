@@ -122,6 +122,7 @@ export const votes = mysqlTable("votes", {
 	uid: bigint({ mode: "number" }).primaryKey().notNull().references(() => users.uid),
 	date: timestamp().notNull().primaryKey(),
 	type: char({ length: 1 }).notNull(),
+	isDate: boolean("is_date").default(false).notNull()
 },
 (table) => [
 	index("votes_uid_idx").on(table.uid),
