@@ -96,3 +96,32 @@ export const deleteSchedule = async (uid: number, scheduleid: number) => {
         eq(usersSchedules.scheduleid, scheduleid)
     ));
 }
+
+export const patchSchedule = async (
+    uid: number, 
+    scheduleid: number, 
+    color: string | undefined, 
+    memo: string | undefined, 
+    userList: number[] | undefined, 
+    start: number | undefined, 
+    end: number | undefined) => {
+    let result1 = await db.select({ count: count() }).from(usersSchedules).where(and(
+        eq(usersSchedules.uid, uid),
+        eq(usersSchedules.scheduleid, scheduleid)
+    ));
+    if (result1[0].count == 0)
+        throw new HTTPError(403, "Forbidden");
+
+    await db.update(schedules).set({
+        color,
+        note: memo,
+        start: start ? new Date(start * 1000) : undefined,
+        end: end ? new Date(end * 1000) : undefined
+    });
+
+    if (userList)
+        await db.insert(usersSchedules).ignore().values(userList.map(uid => ({
+            uid,
+            scheduleid
+        })));
+}
