@@ -109,7 +109,7 @@ export const usersGroups = mysqlTable("users_groups", {
 
 export const usersSchedules = mysqlTable("users_schedules", {
 	uid: bigint({ mode: "number" }).notNull().references(() => users.uid),
-	scheduleid: bigint({ mode: "number" }).notNull().references(() => schedules.scheduleid),
+	scheduleid: bigint({ mode: "number" }).notNull().references(() => schedules.scheduleid, { onDelete: "cascade", onUpdate: "cascade" }),
 	name: varchar({ length: 50 }),
 },
 (table) => [

@@ -1,9 +1,9 @@
 import express, { Router } from 'express';
 import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
-import { body, query } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { createCalendar, getCalendar } from './service';
+import { createCalendar, deleteSchedule, getCalendar } from './service';
 
 const router = Router();
 router.use(express.urlencoded({ extended: false }));
@@ -60,5 +60,23 @@ router.post('/',
     }
   }
 );
+
+router.delete('/:scheduleid', 
+  jwtVerifier,
+  param("scheduleid").isNumeric().notEmpty(),
+  validatorErrorChecker,
+  async (req, res, next) => {
+    try {
+      const uid = req.uid!;
+      const scheduleid = parseInt(req.params.scheduleid);
+
+      await deleteSchedule(uid, scheduleid);
+      res.status(200).json({ ok: true });
+    }
+    catch(e) {
+      next(e);
+    }
+  }
+)
 
 export default router;

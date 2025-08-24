@@ -1,7 +1,8 @@
-import { eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { db } from '../../database';
 import { calendar, schedules, usersSchedules, users } from '../../drizzle/schema';
 import mysql from 'mysql2/promise';
+import HTTPError from '../../utils/HTTPError';
 const usersTable = users;
 
 type Calendar = {
@@ -79,4 +80,19 @@ export async function createCalendar({
     )
 
     return { scheduleid };
+}
+
+// 스케쥴을 진짜로 날리지 않고 스케쥴과 나의 연결만 끊는다.
+export const deleteSchedule = async (uid: number, scheduleid: number) => {
+    let result1 = await db.select({ count: count() }).from(usersSchedules).where(and(
+        eq(usersSchedules.uid, uid),
+        eq(usersSchedules.scheduleid, scheduleid)
+    ));
+    if (result1[0].count == 0)
+        throw new HTTPError(403, "Forbidden");
+
+    await db.delete(usersSchedules).where(and(
+        eq(usersSchedules.uid, uid),
+        eq(usersSchedules.scheduleid, scheduleid)
+    ));
 }
