@@ -23,7 +23,9 @@ export const getCalendar = async (uid: number, year: string | undefined, month: 
         end: schedules.end,
         color: schedules.color,
         users: schedules.usersString
-    }).from(schedules);
+    }).from(schedules)
+    .innerJoin(usersSchedules, eq(schedules.scheduleid, usersSchedules.scheduleid))
+    .where(eq(usersSchedules.uid, uid));
     return result.map(row => ({
         scheduleid: row.scheduleid,
         start: row.start.getTime() / 1000,
