@@ -69,15 +69,6 @@ export const createEvent = async (uid: number, data: {
                 uid: u,
                 eventid
             })));
-            // 이런 쿼리로 잘 차력쇼 해서 간지나는 insert를 하고 싶엇지만
-            // 이거 너무 어려운걸
-            // await tx.insert(usersEvents).select(
-            //     tx.select({
-            //         uid: usersGroups.uid, 
-            //         eventid: sql`${eventid}`.as('eventid'),
-            //         name: sql`null`.as('name')
-            //     }).from(usersGroups).where(inArray(usersGroups.gid, data.groups))
-            // )
 
             return eventid;
         }

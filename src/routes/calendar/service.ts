@@ -4,12 +4,6 @@ import { calendar, schedules, usersSchedules, users } from '../../drizzle/schema
 import mysql from 'mysql2/promise';
 const usersTable = users;
 
-// type CalendarUser = {
-//     name: string,
-//     uid: number, 
-//     picture: string
-// }
-
 type Calendar = {
     scheduleid: number,
     start: number,
@@ -37,23 +31,6 @@ export const getCalendar = async (uid: number, year: string | undefined, month: 
         name: row.name,
         users: row.users
     }))
-    // return [
-    //     {
-    //         start: new Date(2025, 8-1, 13, 12, 0, 0).getTime() / 1000,
-    //         end: new Date(2025, 8-1, 13, 14, 0).getTime() / 1000,
-    //         name: "테스트 1",
-    //         users: ["테스트", "테스트"],
-    //         color: "#F59CA9"
-    //     },
-    //     {
-    //         start: new Date(2025, 8-1, 14, 17, 0, 0).getTime() / 1000,
-    //         end: new Date(2025, 8-1, 14, 18, 30).getTime() / 1000,
-    //         name: "테스트 2",
-    //         groupName: "테스트 그룹",
-    //         users: [],
-    //         color: "#8B5CF6"
-    //     },
-    // ]
 }
 
 // 여기에 그룹추가 하는 거는

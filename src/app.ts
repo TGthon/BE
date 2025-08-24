@@ -7,9 +7,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import friendsRouter from './routes/friends/router';
-import groupRouter from './routes/group/router';
-
 const app = express();
 
 // for development
@@ -22,9 +19,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
 
 app.use('/api', router);
-//app.use('/api/friends', friendsRouter);
-//app.use('/api/group', groupRouter);
-
 
 //app.use('/images', express.static(process.env.IMAGE_FOLDER_PATH!));
 
@@ -32,21 +26,6 @@ if (process.env.IMAGE_FOLDER_PATH) {
   app.use('/images', express.static(process.env.IMAGE_FOLDER_PATH));
 }
 
-
-/*
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    if (err instanceof HTTPError) {
-        res.status(err.statusCode).json({message: err.message});
-    }
-})
-
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    if (err instanceof Error) {
-        console.error(err);
-        res.status(500).json({message: "Internal Server Error"})
-    }
-})
-*/
 
 // Error handlers
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, param, query } from 'express-validator';
-import { googleCodeLogin, googleIdTokenLogin, logout, /* noSecurityLogin, */ refresh, /* googleLogin */ } from './service';
+import { googleCodeLogin, googleIdTokenLogin, logout, refresh } from './service';
 import 'dotenv';
 import HTTPError from '../../utils/HTTPError';
 
@@ -24,10 +24,6 @@ router.post('/login',
                     process.env.CLIENT_SECRET_GOOGLE_WEB!.trim(),
                     process.env.CLIENT_ID_GOOGLE_WEB!.trim()
                 );
-                // let loginResult = await googleAppLogin(
-                //     code,
-                //     process.env.CLIENT_ID_GOOGLE_WEB!.trim()
-                // );
 
                 res.status(200).json(loginResult);
             }
@@ -39,13 +35,6 @@ router.post('/login',
 
                 res.status(200).json(loginResult);
             }
-            // else if(type == "none") {
-            //     let loginResult = await noSecurityLogin(
-            //         code
-            //     );
-
-            //     res.status(200).json(loginResult);
-            // }
             else {
                 throw new HTTPError(400, "Invalid type");
             }
