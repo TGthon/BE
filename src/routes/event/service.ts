@@ -22,7 +22,7 @@ export const getEventlist = async (uid: number): Promise<EventItem[]> => {
     .innerJoin(usersEvents, eq(users.uid, usersEvents.uid))
     .innerJoin(events, eq(events.eventid, usersEvents.eventid))
     .leftJoin(votes, and(eq(users.uid, votes.uid), eq(events.eventid, votes.eventid)))
-    .where(eq(users.uid, uid))
+    .where(and(eq(users.uid, uid), eq(events.finished, false)))
     .groupBy(events.eventid);
 
     return dbResult.map(row => ({
@@ -94,6 +94,7 @@ export const getEventInfo = async (uid: number, eventid: number) => {
     let result2 = await db.select({
         eventDefaultName: events.name,
         eventCustomName: usersEvents.name,
+        finished: events.finished,
         // date
     }).from(events)
     .innerJoin(usersEvents, eq(events.eventid, usersEvents.eventid))
@@ -122,12 +123,13 @@ export const getEventInfo = async (uid: number, eventid: number) => {
     return {
         eventid,
         title: result2[0].eventCustomName || result2[0].eventDefaultName,
+        finished: result2[0].finished,
         // date
         votes: result3.map(row => ({
             uid: row.uid,
             picture: row.profilePicture,
             type: row.type,
-            date: row.date.getTime() / 1000
+            date: row.date.getTime() / 1000,
         })),
         users: result4
     }
@@ -252,7 +254,10 @@ export const confirmEvent = async (uid: number, eventid: number, start: number, 
             name: ''
         })));
         
-        // todo: 이벤트 삭제 (또는 삭제로 마킹)
+        // 이벤트 삭제로 마킹
+        await tx.update(events).set({
+            finished: true
+        }).where(eq(events.eventid, eventid));
     });
 }
 
