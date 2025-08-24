@@ -49,6 +49,7 @@ router.post("/:eventid/day",
             const votes: Vote[] = req.body;
 
             await voteDay(uid, eventid, votes);
+            res.status(200).json({ ok: true });
         }
         catch(e) {
             next(e);
