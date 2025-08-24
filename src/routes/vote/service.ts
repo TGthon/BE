@@ -54,7 +54,8 @@ export const voteDay = async (uid: number, eventid: number, voteList: Vote[]) =>
             eventid: eventid,
             uid: uid,
             date: new Date(v.time * 1000),
-            type: v.type
+            type: v.type,
+            isDate: true
         })))
         .onDuplicateKeyUpdate({
             set: {
