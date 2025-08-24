@@ -107,10 +107,10 @@ export const getEventInfo = async (uid: number, eventid: number) => {
         date: votes.date,
         uid: votes.uid,
         type: votes.type,
-        profilePicture: users.profilePicture
+        profilePicture: users.profilePicture,
     }).from(votes)
     .innerJoin(users, eq(votes.uid, users.uid))
-    .where(eq(votes.eventid, eventid));
+    .where(and(eq(votes.eventid, eventid), eq(votes.isDate, true)));
 
     let result4 = await db.select({
         uid: usersEvents.uid,
