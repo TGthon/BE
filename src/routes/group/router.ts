@@ -45,32 +45,32 @@ router.post('/groupadd', async (req, res) => {
 router.get('/grouplist', async (req: Request, res: Response, next: NextFunction) => {
   const userUid = Number(req.uid); // 인증된 사용자 UID
 
-  try {
-    // 현재 사용자가 속한 그룹 관계 조회
-    const relations = await db
-      .select()
-      .from(usersGroups)
-      .where(eq(usersGroups.uid, userUid));
+    try {
+        // 현재 사용자가 속한 그룹 관계 조회
+        const relations = await db
+            .select()
+            .from(usersGroups)
+            .where(eq(usersGroups.uid, userUid));
 
-    const groupIds = relations.map(rel => rel.gid);
+        const groupIds = relations.map(rel => rel.gid);
 
-    if (groupIds.length === 0) {
-      return res.json({ groups: [] });
-    }
+        if (groupIds.length === 0) {
+            return res.json({ groups: [] });
+        }
 
-    // 그룹 ID 목록으로 그룹 정보 조회
-    const grouplist = await db
-      .select({
+        // 그룹 ID 목록으로 그룹 정보 조회
+        const grouplist = await db
+        .select({
         id: groups.gid,
         name: groups.groupName,
-      })
-      .from(groups)
-      .where(inArray(groups.gid, groupIds));
+        })
+        .from(groups)
+        .where(inArray(groups.gid, groupIds));
 
-    res.json({ grouplist });
-  } catch (err) {
-    next(err);
-  }
+        res.json({ grouplist });
+    } catch (err) {
+        next(err);
+    }
 });
 
 export default router;
