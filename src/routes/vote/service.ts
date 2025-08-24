@@ -4,11 +4,14 @@ import { usersEvents, votes } from "../../drizzle/schema"
 import HTTPError from "../../utils/HTTPError";
 import { Vote } from "./router";
 
-export const vote = async (uid: number, eventid: number, time: number, type: string) => {
-    if (!["P", "N", "I"].includes(type))
-        throw new HTTPError(400, "Bad request");
+export const vote = async (uid: number, eventid: number, voteList: Vote[]) => {
+    for (let v of voteList) {
+        if (!["P", "I"].includes(v.type))
+            throw new HTTPError(400, "Bad request");
 
-    time = time / 1800 * 1800; // 30분
+        // 한국 표준시 기준 0시에 맞춤
+        v.time = v.time / 1800 * 1800; // 30분
+    }
 
     await db.transaction(async tx => {
         let res = await tx.select({
@@ -18,15 +21,16 @@ export const vote = async (uid: number, eventid: number, time: number, type: str
         if (res[0].count == 0)
             throw new HTTPError(403, "Forbidden");
 
-        await tx.insert(votes).values({
+        await tx.insert(votes).values(voteList.map(v => ({
             eventid: eventid,
             uid: uid,
-            date: new Date(time * 1000),
-            type: type
-        })
+            date: new Date(v.time * 1000),
+            type: v.type,
+            isDate: false
+        })))
         .onDuplicateKeyUpdate({
             set: {
-                type: type
+                date: sql`VALUES(date)`
             }
         });
     })

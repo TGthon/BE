@@ -17,17 +17,16 @@ export type Vote = {
 router.post('/:eventid', 
     jwtVerifier,
     param('eventid').isNumeric().notEmpty(),
-    body('time').toInt().notEmpty(),
-    body('type').isString().notEmpty(),
+    body('*.time').toInt().notEmpty(),
+    body('*.type').isString().notEmpty(),
     validatorErrorChecker,
     async (req, res, next) => {
         try {
             const uid = req.uid!;
             const eventid = parseInt(req.params.eventid);
-            const time = req.body.time as number;
-            const type = req.body.type as string;
+            const votes: Vote[] = req.body;
             
-            await vote(uid, eventid, time, type);
+            await vote(uid, eventid, votes);
             res.status(200).json({ ok: true });
         }
         catch(e) {
