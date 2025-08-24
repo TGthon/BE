@@ -22,7 +22,8 @@ export const getCalendar = async (uid: number, year: string | undefined, month: 
         start: schedules.start,
         end: schedules.end,
         color: schedules.color,
-        users: schedules.usersString
+        users: schedules.usersString,
+        memo: schedules.note,
     }).from(schedules)
     .innerJoin(usersSchedules, eq(schedules.scheduleid, usersSchedules.scheduleid))
     .where(eq(usersSchedules.uid, uid));
@@ -32,7 +33,8 @@ export const getCalendar = async (uid: number, year: string | undefined, month: 
         end: row.end.getTime() / 1000,
         color: `#${row.color}`,
         name: row.name,
-        users: row.users
+        users: row.users,
+        memo: row.memo
     }))
 }
 
