@@ -12,7 +12,7 @@ router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
 router.use(jwtVerifier);
 
-router.post('/groupadd', async (req, res) => {
+router.post('/groupadd', async (req, res, next) => {
     const { name, memberIds } = req.body;
 
     if (!name || !Array.isArray(memberIds)) {
@@ -26,6 +26,10 @@ router.post('/groupadd', async (req, res) => {
         });
         const gid = newGroup.insertId;
 
+        await db.insert(usersGroups).values({
+            uid: req.uid!,
+            gid
+        });
         // 2. 멤버 연결
         await db.insert(usersGroups).values(
             memberIds.map(uid => ({
@@ -37,8 +41,7 @@ router.post('/groupadd', async (req, res) => {
 
         res.json({ success: true, groupId: gid });
     } catch (err) {
-        console.error("그룹 저장 실패:", err);
-        res.status(500).json({ error: "서버 오류" });
+        next(err);
     }
 });
 
