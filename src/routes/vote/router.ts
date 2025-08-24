@@ -3,7 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, param } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { vote } from './service';
+import { vote, voteDay } from './service';
 
 const router = Router();
 router.use(express.urlencoded({ extended: false }));
@@ -48,7 +48,7 @@ router.post("/:eventid/day",
             const eventid = parseInt(req.params.eventid);
             const votes: Vote[] = req.body;
 
-
+            await voteDay(uid, eventid, votes);
         }
         catch(e) {
             next(e);
