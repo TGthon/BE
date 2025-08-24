@@ -73,32 +73,10 @@ router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
     const userUid = req.uid!;
 
     try {
-        // // 현재 사용자가 uid1인 친구 관계 조회
-        // const relations = await db
-        //     .select()
-        //     .from(userFriends)
-        //     .where(eq(userFriends.uid1, userUid));
-
-        // const friendUids = relations.map(rel => rel.uid2);
-
-        // if (friendUids.length === 0) {
-        //     return res.json({ friends: [] });
-        // }
-
-        // // 친구 UID 목록으로 사용자 정보 조회
-        // const friends = await db
-        //     .select({
-        //         uid: users.uid,
-        //         name: users.name,
-        //         email: users.email,
-        //     })
-        //     .from(users)
-        //     .where(inArray(users.uid, friendUids));
-
-        const friends = await db.select({uid: users.uid, name: users.name, email: users.email}).from(users)
+        const friends = await db.select({uid: users.uid, name: users.name, email: users.email, picture: users.profilePicture}).from(users)
         .innerJoin(userFriends, eq(users.uid, userFriends.uid1))
         .where(eq(userFriends.uid2, userUid))
-        .union(db.select({uid: users.uid, name: users.name, email: users.email}).from(users)
+        .union(db.select({uid: users.uid, name: users.name, email: users.email, picture: users.profilePicture}).from(users)
         .innerJoin(userFriends, eq(users.uid, userFriends.uid2))
         .where(eq(userFriends.uid1, userUid)));
 
