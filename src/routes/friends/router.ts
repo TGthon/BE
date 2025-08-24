@@ -61,6 +61,7 @@ router.post(
                     uid: friend[0].uid,
                     name: friend[0].name,
                     email: friend[0].email,
+                    picture: friend[0].profilePicture
                 },
             });
         } catch (err) {
