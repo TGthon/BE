@@ -105,6 +105,10 @@ export const patchSchedule = async (
     userList: number[] | undefined, 
     start: number | undefined, 
     end: number | undefined) => {
+    // DB에는 #떼고 저장
+    if (color && color[0] == '#')
+        color = color.substring(1);
+
     let result1 = await db.select({ count: count() }).from(usersSchedules).where(and(
         eq(usersSchedules.uid, uid),
         eq(usersSchedules.scheduleid, scheduleid)
@@ -117,7 +121,8 @@ export const patchSchedule = async (
         note: memo,
         start: start ? new Date(start * 1000) : undefined,
         end: end ? new Date(end * 1000) : undefined
-    });
+    })
+    .where(eq(schedules.scheduleid, scheduleid));
 
     if (userList)
         await db.insert(usersSchedules).ignore().values(userList.map(uid => ({

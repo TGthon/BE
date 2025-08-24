@@ -79,7 +79,9 @@ router.delete('/:scheduleid',
   }
 )
 
-router.patch('/:scheduleid',
+// PATCH 쓰려고 했는데 프론트쪽에 PATCH호출하는 코드가없다
+// 그냥 PUT써야지
+router.put('/:scheduleid',
   jwtVerifier,
   param("scheduleid").isNumeric().notEmpty(),
   body("color").optional().isString(),
@@ -100,6 +102,7 @@ router.patch('/:scheduleid',
       const end: number | undefined = req.body.end;
 
       await patchSchedule(uid, scheduleid, color, memo, userList, start, end);
+      res.status(200).json({ ok: true });
     }
     catch(e) {
       next(e);
