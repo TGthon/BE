@@ -3,7 +3,7 @@ import validatorErrorChecker from '../../middlewares/validatorErrorChecker';
 import { body, param, query } from 'express-validator';
 import HTTPError from '../../utils/HTTPError';
 import jwtVerifier from '../../middlewares/jwtVerifier';
-import { createCalendar, deleteSchedule, getCalendar, patchSchedule } from './service';
+import { createCalendar, deleteSchedule, getCalendar, getCalendarDetail, patchSchedule } from './service';
 
 const router = Router();
 router.use(express.urlencoded({ extended: false }));
@@ -22,6 +22,22 @@ router.get('/',
             const year = req.query.year as string | undefined;
             const month = req.query.month as string | undefined;
             res.status(200).json(await getCalendar(uid, year, month));
+        }
+        catch(e) {
+            next(e);
+        }
+    }
+)
+
+router.get('/:scheduleid',
+    jwtVerifier,
+    param("scheduleid").isNumeric().notEmpty(),
+    validatorErrorChecker,
+    async (req, res, next) => {
+        try {
+            const uid = req.uid!;
+            const scheduleid = parseInt(req.params.scheduleid);
+            res.status(200).json(await getCalendarDetail(uid, scheduleid));
         }
         catch(e) {
             next(e);

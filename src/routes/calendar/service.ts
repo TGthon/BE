@@ -38,6 +38,40 @@ export const getCalendar = async (uid: number, year: string | undefined, month: 
     }))
 }
 
+export const getCalendarDetail = async (uid: number, scheduleid: number) => {
+    let result = await db.select({
+        scheduleid: schedules.scheduleid,
+        name: schedules.name,
+        start: schedules.start,
+        end: schedules.end,
+        color: schedules.color,
+        memo: schedules.note,
+    }).from(schedules)
+    .innerJoin(usersSchedules, eq(schedules.scheduleid, usersSchedules.scheduleid))
+    .where(and(eq(usersSchedules.uid, uid), eq(schedules.scheduleid, scheduleid)));
+
+    if(result.length == 0)
+        throw new HTTPError(400, "Bad request");
+
+    let members = await db.select({ 
+        uid: usersSchedules.uid,
+        name: users.name
+    })
+    .from(usersSchedules).where(eq(usersSchedules.scheduleid, scheduleid))
+    .innerJoin(users, eq(users.uid, usersSchedules.uid));
+
+    let row = result[0];
+    return {
+        id: row.scheduleid,
+        start: row.start.getTime() / 1000,
+        end: row.end.getTime() / 1000,
+        color: `#${row.color}`,
+        title: row.name,
+        note: row.memo,
+        members: members.map(m => m.name)
+    }
+}
+
 // 여기에 그룹추가 하는 거는
 // event에 있는 거 그대로 가져와야겠다
 export async function createCalendar({
