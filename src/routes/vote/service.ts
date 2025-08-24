@@ -1,4 +1,4 @@
-import { eq, and, count, sql } from "drizzle-orm";
+import { eq, and, count, sql, gte, lt } from "drizzle-orm";
 import { db } from "../../database"
 import { usersEvents, votes } from "../../drizzle/schema"
 import HTTPError from "../../utils/HTTPError";
@@ -67,4 +67,21 @@ export const voteDay = async (uid: number, eventid: number, voteList: Vote[]) =>
             }
         });
     })
+}
+
+export const getTimeVote = async (uid: number, eventid: number, day: number) => {
+    let result = await db.select({
+        date: votes.date,
+        type: votes.type
+    }).from(votes)
+    .where(and(
+        gte(votes.date, new Date(day * 1000)), 
+        lt(votes.date, new Date((day + 86400) * 1000)),
+        eq(votes.eventid, eventid),
+        eq(votes.isDate, false)
+    ));
+    return result.map(row => ({
+        date: row.date.getTime() / 1000,
+        type: row.type,
+    }))
 }
